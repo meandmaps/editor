@@ -1,26 +1,74 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
 
-const App: React.FC = () => {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+import Header from './Header';
+import Menu from './Menu';
+import Map from './Map';
+import Loader from './Loader';
+
+interface IProps {
+
 }
 
-export default App;
+interface IState {
+
+  openLoad: boolean;
+  styleUrl: string;
+  styleName: string;
+  sprite: any;
+  imageUrl: string;
+}
+
+export default class App extends React.Component <IProps,IState> {
+
+  constructor(props: IProps) {
+
+    super(props);
+
+    this.state = {
+
+      openLoad: true,
+      styleUrl: '',
+      styleName: '',
+      sprite: null,
+      imageUrl: ''
+    };
+  }
+
+  onLoad(url: string) {
+
+    console.log("onLoad :" + url);
+
+    this.setState({openLoad:false,styleUrl: url});
+  }
+
+  onClose() {
+
+    this.setState({openLoad:false});
+  }
+
+  displayLoader() {
+
+    if (this.state.openLoad)
+      return (<Loader loadHandler={(url: string) => this.onLoad(url)} closeHandler={() => this.onClose()}/>);
+    else
+      return;
+  }
+
+  mapLoaded(styleName: string, sprite: any, img: string) {
+
+    this.setState({styleName:styleName,sprite:sprite,imageUrl:img});
+  }
+
+  render() {
+    return (
+      <div className="App">
+        <Header styleName={this.state.styleName}/>
+        <Menu sprite={this.state.sprite} imageUrl={this.state.imageUrl}/>
+        <Map styleUrl={this.state.styleUrl} mapLoaded={(styleName: string, sprite: any, imageUrl: string) => this.mapLoaded(styleName,sprite,imageUrl)}/>
+        {this.displayLoader()}
+      </div>
+    );
+  }
+}
+

@@ -1,0 +1,19 @@
+.Loader {
+    
+    background-color: #303035;
+    position: absolute;
+    width: 700px;
+    height: 200px;
+    left: calc(50% - 350px);
+    top: calc(50% - 100px);
+}
+
+input {
+
+    width: 600px;
+    color: white;
+    background-color: #303035;
+    border: none;
+    border-bottom: 1px solid #ccc;
+    font-size: 20px;
+}

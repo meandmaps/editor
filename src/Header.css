@@ -1,0 +1,21 @@
+.Header {
+    background-color: #303035;
+    height: 30px;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+}
+
+.headerTitle {
+
+    color: white;
+    font-weight: bold;
+    line-height: 30px;
+}
+
+.styleName {
+
+    color: white;
+    font-weight: bold;
+    line-height: 30px;
+}

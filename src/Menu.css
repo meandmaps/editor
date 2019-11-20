@@ -1,0 +1,12 @@
+.Menu {
+
+    width: 220px;
+    height: calc(100% - 30px);
+    background-color: #303035;
+
+    display: flex;
+    flex-wrap: wrap;
+    align-content: flex-start;
+
+    padding: 10px;
+}
