@@ -1,12 +1,12 @@
 .Markers {
 
     background-color: #282830;
-
+    
     display: flex;
     flex-wrap: wrap;
     align-content: flex-start;
 
     margin: 10px;
     margin-bottom: 5px;
-    margin-top: 0px;
+    margin-top: 5px;
 }

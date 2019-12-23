@@ -44,8 +44,7 @@ export default class Loader extends React.Component <IProps,IState> {
         return (
             <div className="Loader">
                 <input id="styleUrl" type="text" placeholder="Map style url" value={this.state.styleUrl} onChange={this.onChange}></input>
-                <button onClick={this.onCancel}>Cancel</button>
-                <button onClick={this.onLoad}>Load</button>
+                <button onClick={this.onLoad}>Go!</button>
             </div>
         );
     }

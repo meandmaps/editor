@@ -2,18 +2,47 @@
     
     background-color: #303035;
     position: absolute;
-    width: 700px;
-    height: 200px;
-    left: calc(50% - 350px);
-    top: calc(50% - 100px);
+    width: 600px;
+    height: 100px;
+    left: calc(50% - 300px);
+    top: calc(50% - 50px);
+    display: flex;
+    justify-content: space-around;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.5), 0 6px 20px 0 rgba(0, 0, 0, 0.5);
 }
 
-input {
+#styleUrl {
 
-    width: 600px;
+    width: 400px;
     color: white;
     background-color: #303035;
     border: none;
-    border-bottom: 1px solid #ccc;
+    border-bottom: 1px solid white;
+    font-size: 16px;
+    margin: 20px;
+}
+
+#styleUrl:focus {
+
+    border-bottom: 1px solid aquamarine;
+}
+
+#styleUrl:hover {
+
+    border-bottom: 1px solid aquamarine;
+}
+
+.Loader > button {
+
+    width: 80px;
+    margin: 30px;
     font-size: 20px;
+    color: white;
+    background-color: #303035;
+    border: solid 1px white;
+}
+
+.Loader > button:hover {
+
+    background-color: aquamarine;
 }

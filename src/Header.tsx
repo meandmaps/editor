@@ -20,7 +20,7 @@ export default class Header extends React.Component <IProps,IState> {
         return (
             <div className="Header">
                 
-                <div className="headerTitle">POI editor</div>
+                <div className="headerTitle"><div>me & maps editor</div><div className="headerVersion">v0.01</div></div>
                 <div className="styleName">{this.props.styleName}</div>
             </div>
           );

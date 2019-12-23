@@ -1,10 +1,66 @@
 .PoiList {
 
-    background-color: #282830;
-
-    padding: 5px;
     flex: 1 1;
     margin: 10px;
     margin-top: 5px;
     overflow: scroll;
+}
+
+ul {
+
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+li {
+
+    background-color: #282830;
+    color: white;
+    margin-top: 5px;
+    padding: 2px;
+    border-radius: 3px;
+    display: flex;
+    flex-direction: column;
+}
+
+li:hover {
+
+    cursor: pointer;
+}
+
+.Poi {
+
+    display: flex;
+}
+
+.Poi:hover {
+
+    color: aquamarine;
+}
+
+.noPoi {
+
+    color: white;
+    margin: 40px;
+    text-align: center;
+    font-style: italic;
+}
+
+.UpdatePoi {
+
+    display: flex;
+    justify-content: space-evenly;
+    padding: 5px;
+}
+
+.UpdatePoi > div:hover {
+
+    color: aquamarine;
+}
+
+.UpdateAction {
+
+    font-style: italic;
+    font-weight: lighter;
 }

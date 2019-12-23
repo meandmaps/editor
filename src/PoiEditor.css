@@ -1,0 +1,141 @@
+.PoiEditor {
+    
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    left: 0px;
+    top: 0px;
+}
+
+.PoiEditor > div {
+    
+    padding: 20px;
+    background-color: #303035;
+    opacity: 0.9;
+    color: white;
+    position: absolute;
+    width: 600px;
+    height: 300px;
+    left: calc(50% - 300px);
+    top: calc(50% - 150px);
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row;
+    justify-content: space-between;
+    box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.5), 0 6px 20px 0 rgba(0, 0, 0, 0.5);
+}
+
+input {
+
+    color: white;
+    background-color: #303035;
+    border: none;
+    border-bottom: 1px solid white;
+}
+
+.PoiSymbol:hover {
+
+    background-color: aquamarine;
+}
+
+.PoiTitle {
+    height: 30px;
+    width: 530px;
+    font-size: 20px;
+}
+
+.PoiTitle:focus {
+
+    border-bottom: 1px solid aquamarine;
+}
+
+.PoiTitle:hover {
+
+    border-bottom: 1px solid aquamarine;
+}
+
+.PoiDesc {
+    width: 100%;
+    height: 120px;
+    background-color: #303035;
+    font-family: inherit;
+    font-size: 20px;
+    color: white;
+    resize: none;
+    border: solid 1px white;
+}
+
+.PoiDesc:focus {
+
+    border: 1px solid aquamarine;
+}
+
+.PoiDesc:hover{
+
+    border: 1px solid aquamarine;
+}
+
+.PoiEditor > div > button {
+
+    width: 80px;
+    height: 40px;
+    font-size: 20px;
+    color: white;
+    background-color: #303035;
+    border: solid 1px white;
+    margin-top: 20px;
+}
+
+.PoiEditor > div > button:hover {
+
+    background-color: aquamarine;
+}
+
+.PoiPhoto {
+
+    display: flex;
+    width: 100%;
+    height: 20px;
+    justify-content: space-between;
+}
+
+.PoiPhoto > input {
+
+    width: 530px;
+}
+
+.PoiPhoto > input:focus {
+
+    border-bottom: 1px solid aquamarine;
+}
+
+.PoiPhoto > input:hover {
+
+    border-bottom: 1px solid aquamarine;
+}
+
+.PoiProp {
+
+    display: flex;
+    height: 20px;
+}
+
+.PoiProp > div {
+
+    margin-right: 10px;
+}
+
+.PoiProp > input {
+
+    width: 80px;
+}
+
+.PoiProp > input:focus {
+
+    border-bottom: 1px solid aquamarine;
+}
+
+.PoiProp > input:hover {
+
+    border-bottom: 1px solid aquamarine;
+}

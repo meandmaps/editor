@@ -3,6 +3,7 @@ import mapboxgl from 'mapbox-gl';
 import './mapbox-gl.css'
 import './Map.css'
 import { threadId } from 'worker_threads';
+import Poi from './Poi';
 
 interface IProps {
   
@@ -10,6 +11,7 @@ interface IProps {
     mapLoaded: any;
     poiAdded: any;
     marker: string;
+    poiList: Poi[];
 }
 
 interface IState {
@@ -34,23 +36,30 @@ export default class Map extends React.Component <IProps,IState> {
         this.currentStyleUrl = '';
         this.timerId = 0;
         this.mapMouseEvent = null;
+        this.geojsonData = {
+            type: 'FeatureCollection',
+            features: []
+
+        };
     }
 
     addPoi() {
 
         if (this.mapMouseEvent != null) {
 
-            this.props.poiAdded(this.mapMouseEvent.lngLat);
+            const poi: Poi = new Poi(Date.now(),this.mapMouseEvent.lngLat,this.props.marker);
 
             const feature = {
 
                 'type': 'Feature',
                 'geometry': {
                     'type': 'Point',
-                    'coordinates': [this.mapMouseEvent.lngLat.lng,this.mapMouseEvent.lngLat.lat]
+                    'coordinates': [poi.getLngLat().lng,poi.getLngLat().lat]
                 },
                 'properties': {
-                    'icon': this.props.marker
+                    'icon': poi.getSymbol(),
+                    'icon-size': poi.getSymbolSize(),
+                    'ref': poi.getRef()
                 }
             };
 
@@ -59,6 +68,8 @@ export default class Map extends React.Component <IProps,IState> {
             console.log(JSON.stringify(this.geojsonData));
 
             this.updateMarkers();
+
+            this.props.poiAdded(poi);
         }
     }
 
@@ -100,7 +111,7 @@ export default class Map extends React.Component <IProps,IState> {
                 container: 'map',
                 style: this.props.styleUrl,
                 attributionControl: true,
-                customAttribution: '<a href="https://toktuko.herokuapp.com" target="_blank">© Toktuko</a>'
+                customAttribution: '<a href="https://www.meandmaps.com" target="_blank">© me & maps</a>'
             });
     
             if (this.map) {
@@ -130,12 +141,7 @@ export default class Map extends React.Component <IProps,IState> {
                                 }
                             );
 
-                        this.geojsonData = {
-
-                            type: 'FeatureCollection',
-                            features: []
-
-                        };
+                        
 
                         this.map.addSource('markers', { type: 'geojson', data: this.geojsonData });
 
@@ -144,9 +150,8 @@ export default class Map extends React.Component <IProps,IState> {
                             'type': 'symbol',
                             'source': 'markers',
                             'layout': {
-                                // get the icon name from the source's "icon" property
                                 'icon-image': ['get', 'icon'],
-                                "icon-size": 0.5,
+                                "icon-size": ['get', 'icon-size'],
                                 "icon-allow-overlap": true
                             }
                         });
@@ -173,6 +178,26 @@ export default class Map extends React.Component <IProps,IState> {
                     this.clearMarkerTimeout();
                 });
 
+                this.map.on('click', 'markers', function (e: any) {
+
+                    if (e) {
+                        
+                        console.log('click on POI '+e.features[0].properties.ref);
+                    }
+                });
+
+                // Change the cursor to a pointer when the mouse is over the places layer.
+                this.map.on('mouseenter', 'markers', (e: mapboxgl.MapMouseEvent) => {
+
+                    e.target.getCanvas().style.cursor = 'pointer';
+                });
+                
+                // Change it back to a pointer when it leaves.
+                this.map.on('mouseleave', 'markers', (e: mapboxgl.MapMouseEvent) => {
+
+                    e.target.getCanvas().style.cursor = '';
+                });
+
             }
         }
     }
@@ -182,9 +207,30 @@ export default class Map extends React.Component <IProps,IState> {
         this.loadMap();
     }
 
+    removeDeletedPoi() {
+
+        for (let i = 0;i<this.geojsonData.features.length;i++) {
+
+            let found = false;
+
+            for (let poi of this.props.poiList) {
+
+                if (this.geojsonData.features[i].properties.ref == poi.getRef())
+                    found = true;
+            }
+
+            if (!found) {
+                this.geojsonData.features.splice(i, 1);
+                this.updateMarkers();
+            } 
+        }
+    }
+
     componentDidUpdate() {
 
         this.loadMap();
+
+        this.removeDeletedPoi();
     }
         
     render() {

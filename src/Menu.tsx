@@ -11,6 +11,8 @@ interface IProps {
     imageUrl: string;
     poiList: Poi[];
     markerSelected: any;
+    poiDeleted: any;
+    poiEdited: any;
 }
 
 interface IState {
@@ -32,7 +34,7 @@ export default class Menu extends React.Component <IProps,IState> {
     return (
       <div className="Menu">
           <Markers sprite={this.props.sprite} imageUrl={this.props.imageUrl} markerSelected={this.props.markerSelected}/>
-          <PoiList poiList={this.props.poiList}/>
+          <PoiList sprite={this.props.sprite} imageUrl={this.props.imageUrl} poiList={this.props.poiList} poiDeleted={this.props.poiDeleted} poiEdited={this.props.poiEdited}/>
       </div>
     );
   }

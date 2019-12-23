@@ -41,8 +41,8 @@ export default class Markers extends React.Component <IProps,IState> {
     if (!marker)
         return;
 
-    const xRatio = 36.0/this.props.sprite[key].width;
-    const yRatio = 36.0/this.props.sprite[key].height;
+    const xRatio = 30.0/this.props.sprite[key].width;
+    const yRatio = 30.0/this.props.sprite[key].height;
 
     const ratio = (xRatio <= yRatio)?xRatio:yRatio;
 
