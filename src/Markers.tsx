@@ -25,6 +25,14 @@ export default class Markers extends React.Component <IProps,IState> {
   componentDidUpdate() {
 
     console.log(this.props.imageUrl);
+
+    if (this.state.selectedMarker === '') {
+
+      if (this.props.sprite) {
+          this.selectMarker(Object.keys(this.props.sprite)[0]);
+      }
+      //console.log(this.props.sprite);
+  }
   }
 
   selectMarker(key: string) {
@@ -66,7 +74,7 @@ export default class Markers extends React.Component <IProps,IState> {
 
     const handleClick: any = () => { this.selectMarker(key) };
     
-    return (<div id={key} title={key} style={topStyle} onClick={handleClick}><div style={style}></div></div>);
+    return (<div key={key} id={key} title={key} style={topStyle} onClick={handleClick}><div style={style}></div></div>);
   }
 
   getSprites(): any {
@@ -78,15 +86,7 @@ export default class Markers extends React.Component <IProps,IState> {
   }
   
   render() {
-
-    if (this.state.selectedMarker == '') {
-
-        if (this.props.sprite) {
-            this.selectMarker(Object.keys(this.props.sprite)[0]);
-        }
-        //console.log(this.props.sprite);
-    }
-
+    
     return (
       <div className="Markers">
         {this.getSprites()}

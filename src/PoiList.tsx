@@ -1,30 +1,54 @@
 import React, { CSSProperties } from 'react';
-import './PoiList.css';
+import * as Redux from 'redux'
+import { connect } from 'react-redux'
 
-import Poi from './Poi';
+import { Poi, PoiActionTypes } from './PoiReducerTypes';
+import { selectPoi, editPoi, removePoi } from './PoiReducerActions';
+
+import './PoiList.css';
+import { RootState } from './RootReducer';
 
 interface IProps {
 
-  poiList: Poi[];
   sprite: any;
   imageUrl: string;
-  poiDeleted: any;
-  poiEdited: any;
+}
+
+interface StateProps {
+  poiList: Poi[],
+  selectedPoi: number,
+}
+
+interface DispatchProps {
+  selectPoi: (ref: number) => void,
+  editPoi: (ref: number) => void,
+  removePoi: (ref: number) => void,
 }
 
 interface IState {
 
-  selectedPoi: Poi|null;
 }
 
-export default class PoiList extends React.Component <IProps,IState> {
+type Props = StateProps & DispatchProps & IProps;
 
-  constructor(props: IProps) {
+function mapStateToProps(state: RootState, ownProps: IProps): StateProps {
+
+    return { poiList: state.poi.poiList, selectedPoi: state.poi.selectedPoi };
+}
+
+const mapDispatchToProps = {
+  
+  selectPoi,
+  editPoi,
+  removePoi
+};
+
+class PoiList extends React.Component <Props,IState> {
+
+  constructor(props: Props) {
 
     super(props);
-
-    this.state = {selectedPoi: null};
-
+  
     this.selectPoi = this.selectPoi.bind(this);
   }
 
@@ -59,31 +83,35 @@ export default class PoiList extends React.Component <IProps,IState> {
 
   updatePoi(poi: Poi) {
 
-    if (poi == this.state.selectedPoi) {
+    if (poi.ref == this.props.selectedPoi) {
 
-      return (<div className="UpdatePoi"><div className="UpdateAction" onClick={(e) => {this.props.poiEdited(poi); e.stopPropagation();} }>Edit</div><div className="UpdateAction" onClick={(e) => this.props.poiDeleted(poi)}>Delete</div></div>)
+      return (<div className="UpdatePoi"><div className="UpdateAction" onClick={(e) => {this.props.editPoi(poi.ref); e.stopPropagation();} }>Edit</div><div className="UpdateAction" onClick={(e) => {this.props.removePoi(poi.ref); e.stopPropagation();}}>Delete</div></div>)
     }
   }
 
   selectPoi(poi: Poi) {
 
-    if (poi == this.state.selectedPoi) {
-      this.setState({selectedPoi:null});
+    if (poi.ref == this.props.selectedPoi) {
+      this.props.selectPoi(-1);
     }
     else {
-      this.setState({selectedPoi:poi});
+      this.props.selectPoi(poi.ref);
     }
+  }
+
+  componentDidUpdate() {
+    
   }
 
   renderPoi() {
 
     return this.props.poiList.map((poi: Poi) => { return (
     
-          <li onClick={(e) => this.selectPoi(poi)}>
+          <li onClick={(e) => this.selectPoi(poi)} key={poi.ref}>
             
             <div className="Poi">
-              {this.getSymbol(poi.getSymbol())}
-              <div style={poi == this.state.selectedPoi ? {color:'aquamarine'} : {}}>{poi.getTitle()}</div>
+              {this.getSymbol(poi.symbol)}
+              <div style={poi.ref == this.props.selectedPoi ? {color:'aquamarine'} : {}}>{poi.title}</div>
             </div>
 
             {this.updatePoi(poi)}
@@ -117,3 +145,4 @@ export default class PoiList extends React.Component <IProps,IState> {
   }
 }
 
+export default connect(mapStateToProps, mapDispatchToProps)(PoiList)

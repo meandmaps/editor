@@ -1,23 +1,50 @@
 import React from 'react';
+import * as Redux from 'redux'
+import { connect } from 'react-redux'
+
 import mapboxgl from 'mapbox-gl';
 import './mapbox-gl.css'
 import './Map.css'
-import { threadId } from 'worker_threads';
-import Poi from './Poi';
+
+import { Poi, PoiActionTypes } from './PoiReducerTypes';
+import { addPoi, selectPoi } from './PoiReducerActions';
+import { FeatureCollection, Geometry } from 'geojson';
+import { RootState } from './RootReducer';
 
 interface IProps {
-  
+    
     styleUrl: string;
     mapLoaded: any;
-    poiAdded: any;
     marker: string;
-    poiList: Poi[];
+}
+
+interface StateProps {
+    poiList: Poi[]
+}
+       
+interface DispatchProps {
+    addPoi: (newPoi: Poi) => void,
+    selectPoi: (ref: number) => void,
 }
 
 interface IState {
+
 }
 
-export default class Map extends React.Component <IProps,IState> {
+type Props = StateProps & DispatchProps & IProps;
+
+function mapStateToProps(state: RootState, ownProps: IProps): StateProps {
+
+    return { poiList: state.poi.poiList };
+}
+
+const mapDispatchToProps = {
+    
+    addPoi,
+    selectPoi
+};
+
+class Map extends React.Component <Props,IState> {
 
     private map: mapboxgl.Map | null = null;
 
@@ -27,58 +54,74 @@ export default class Map extends React.Component <IProps,IState> {
     private timerId: number;
     private mapMouseEvent: mapboxgl.MapMouseEvent|null;
 
-    private geojsonData: any;
+    private popup: mapboxgl.Popup;
 
-    constructor(props: IProps) {
+    constructor(props: Props) {
         
         super(props);
 
         this.currentStyleUrl = '';
         this.timerId = 0;
         this.mapMouseEvent = null;
-        this.geojsonData = {
-            type: 'FeatureCollection',
-            features: []
 
-        };
+        this.state = {};
+
+        this.popup = new mapboxgl.Popup({ closeButton: false, closeOnClick: false});
     }
 
     addPoi() {
 
         if (this.mapMouseEvent != null) {
 
-            const poi: Poi = new Poi(Date.now(),this.mapMouseEvent.lngLat,this.props.marker);
-
-            const feature = {
-
-                'type': 'Feature',
-                'geometry': {
-                    'type': 'Point',
-                    'coordinates': [poi.getLngLat().lng,poi.getLngLat().lat]
-                },
-                'properties': {
-                    'icon': poi.getSymbol(),
-                    'icon-size': poi.getSymbolSize(),
-                    'ref': poi.getRef()
-                }
+            const poi: Poi = {
+                ref:Date.now(),
+                title: "Unamed Poi",
+                desc: "",
+                photoUrl: "",
+                lngLat: this.mapMouseEvent.lngLat,
+                symbol: this.props.marker,
+                symbolSize: 0.5
             };
 
-            this.geojsonData.features.push(feature);
-
-            console.log(JSON.stringify(this.geojsonData));
-
-            this.updateMarkers();
-
-            this.props.poiAdded(poi);
+            this.props.addPoi(poi);
         }
     }
 
     updateMarkers() {
-        
-        const source: mapboxgl.GeoJSONSource = this.map!.getSource('markers') as mapboxgl.GeoJSONSource;
-        
-        if (source) {
-            source.setData(this.geojsonData);
+
+        if (this.map) {
+
+            const source: mapboxgl.GeoJSONSource = this.map.getSource('markers') as mapboxgl.GeoJSONSource;
+
+            if (source) {
+
+                let geojsondata: any = {
+                    type: 'FeatureCollection',
+                    features: new Array()
+                };
+
+                for (let poi of this.props.poiList) {
+
+                    let feature: any = {
+
+                        'type': 'Feature',
+                        'geometry': {
+                            'type': 'Point',
+                            'coordinates': [poi.lngLat.lng,poi.lngLat.lat]
+                        },
+                        'properties': {
+                            'icon': poi.symbol,
+                            'icon-size': poi.symbolSize,
+                            'ref': poi.ref,
+                            'title': poi.title,
+                        }
+                    };
+                    
+                    geojsondata.features.push(feature);
+                }
+                
+                source.setData(geojsondata);
+            }
         }
     }
 
@@ -89,6 +132,11 @@ export default class Map extends React.Component <IProps,IState> {
             window.clearTimeout(this.timerId);
             this.timerId = 0;
         }
+    }
+
+    selectPoi(ref: number) {
+
+        this.props.selectPoi(ref);
     }
 
     loadMap() {
@@ -141,9 +189,11 @@ export default class Map extends React.Component <IProps,IState> {
                                 }
                             );
 
-                        
-
-                        this.map.addSource('markers', { type: 'geojson', data: this.geojsonData });
+                        this.map.addSource('markers', { type: 'geojson', data: {
+                                type: 'FeatureCollection',
+                                features: []
+                            }
+                        });
 
                         this.map.addLayer({
                             'id': 'markers',
@@ -178,24 +228,33 @@ export default class Map extends React.Component <IProps,IState> {
                     this.clearMarkerTimeout();
                 });
 
-                this.map.on('click', 'markers', function (e: any) {
+                this.map.on('click', 'markers', (e: any) => {
 
                     if (e) {
+
+                        this.selectPoi(e.features[0].properties.ref);
                         
-                        console.log('click on POI '+e.features[0].properties.ref);
+                        //console.log('click on POI '+e.features[0].properties.ref);
                     }
                 });
 
                 // Change the cursor to a pointer when the mouse is over the places layer.
-                this.map.on('mouseenter', 'markers', (e: mapboxgl.MapMouseEvent) => {
+                this.map.on('mouseenter', 'markers', (e: any) => {
 
                     e.target.getCanvas().style.cursor = 'pointer';
+
+                    this.popup
+                        .setLngLat(e.features[0].geometry.coordinates)
+                        .setHTML('<span>'+e.features[0].properties.title+'</span>')
+                        .addTo(this.map!);
                 });
                 
                 // Change it back to a pointer when it leaves.
                 this.map.on('mouseleave', 'markers', (e: mapboxgl.MapMouseEvent) => {
 
                     e.target.getCanvas().style.cursor = '';
+
+                    this.popup.remove();
                 });
 
             }
@@ -205,32 +264,15 @@ export default class Map extends React.Component <IProps,IState> {
     componentDidMount() {
 
         this.loadMap();
-    }
 
-    removeDeletedPoi() {
-
-        for (let i = 0;i<this.geojsonData.features.length;i++) {
-
-            let found = false;
-
-            for (let poi of this.props.poiList) {
-
-                if (this.geojsonData.features[i].properties.ref == poi.getRef())
-                    found = true;
-            }
-
-            if (!found) {
-                this.geojsonData.features.splice(i, 1);
-                this.updateMarkers();
-            } 
-        }
+        this.updateMarkers();
     }
 
     componentDidUpdate() {
 
         this.loadMap();
 
-        this.removeDeletedPoi();
+        this.updateMarkers();
     }
         
     render() {
@@ -239,3 +281,5 @@ export default class Map extends React.Component <IProps,IState> {
         );
     }
 }
+
+export default connect(mapStateToProps, mapDispatchToProps)(Map)
