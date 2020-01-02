@@ -2,6 +2,7 @@
   "name": "editor",
   "version": "0.1.0",
   "private": true,
+  "homepage": "https://maps.meandmaps.com/editor",
   "dependencies": {
     "@types/jest": "24.0.20",
     "@types/mapbox-gl": "^1.5.2",
@@ -19,6 +20,7 @@
     "react-scripts": "3.2.0",
     "redux": "^4.0.4",
     "redux-persist": "^6.0.0",
+    "serialize-javascript": "^2.1.2",
     "typescript": "3.6.4"
   },
   "scripts": {

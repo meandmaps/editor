@@ -66,7 +66,7 @@ class Loader extends React.Component <Props,IState> {
 
         super(props);
 
-        this.state = {styleUrl: 'http://127.0.0.1:7777/lesarcs/style_lesarcs.json'};
+        this.state = {styleUrl: 'https://maps.meandmaps.com/lesarcs/style_lesarcs.json'};
 
         this.onChange = this.onChange.bind(this);
         this.onLoad = this.onLoad.bind(this);
@@ -91,6 +91,7 @@ class Loader extends React.Component <Props,IState> {
 
             <div className="Loader">
                 <div>
+                    <div id="styleTitle">Enter a map style url</div>
                     <input id="styleUrl" type="text" placeholder="Map style url" value={this.state.styleUrl} onChange={this.onChange}></input>
                     <button onClick={this.onLoad}>Go!</button>
                 </div>
