@@ -1,3 +1,26 @@
+/* MIT License
+
+Copyright (c) 2019 Benoit Baudaux
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
 import React from 'react';
 import * as Redux from 'redux'
 import { connect } from 'react-redux'
@@ -8,23 +31,23 @@ import './Map.css'
 
 import { Poi, PoiActionTypes } from './PoiReducerTypes';
 import { addPoi, selectPoi } from './PoiReducerActions';
-import { FeatureCollection, Geometry } from 'geojson';
+import { styleLoaded } from './StyleReducerActions';
 import { RootState } from './RootReducer';
 
 interface IProps {
     
-    styleUrl: string;
-    mapLoaded: any;
-    marker: string;
 }
 
 interface StateProps {
-    poiList: Poi[]
+    poiList: Poi[];
+    styleUrl: string;
+    selectedMarker: string;
 }
        
 interface DispatchProps {
     addPoi: (newPoi: Poi) => void,
     selectPoi: (ref: number) => void,
+    styleLoaded: (styleName: string, sprite: any, imageUrl: string) => void,
 }
 
 interface IState {
@@ -35,13 +58,14 @@ type Props = StateProps & DispatchProps & IProps;
 
 function mapStateToProps(state: RootState, ownProps: IProps): StateProps {
 
-    return { poiList: state.poi.poiList };
+    return { poiList: state.poi.poiList, styleUrl: state.style.styleUrl, selectedMarker: state.style.selectedMarker };
 }
 
 const mapDispatchToProps = {
     
     addPoi,
-    selectPoi
+    selectPoi,
+    styleLoaded,
 };
 
 class Map extends React.Component <Props,IState> {
@@ -73,13 +97,14 @@ class Map extends React.Component <Props,IState> {
 
         if (this.mapMouseEvent != null) {
 
+            const metadata = [ {lang:"fr", title:"Sans titre", desc:""} ];
+
             const poi: Poi = {
                 ref:Date.now(),
-                title: "Unamed Poi",
-                desc: "",
+                metadata: metadata,
                 photoUrl: "",
                 lngLat: this.mapMouseEvent.lngLat,
-                symbol: this.props.marker,
+                symbol: this.props.selectedMarker,
                 symbolSize: 0.5
             };
 
@@ -113,7 +138,7 @@ class Map extends React.Component <Props,IState> {
                             'icon': poi.symbol,
                             'icon-size': poi.symbolSize,
                             'ref': poi.ref,
-                            'title': poi.title,
+                            'metadata': poi.metadata,
                         }
                     };
                     
@@ -155,6 +180,19 @@ class Map extends React.Component <Props,IState> {
 
         if (this.props.styleUrl.length > 0) {
 
+            let index = this.props.styleUrl.indexOf("access_token");
+
+            if ( index >= 0) {
+
+                mapboxgl.accessToken = this.props.styleUrl.substring(index+13);
+
+                console.log(mapboxgl.accessToken);
+            }
+            else {
+
+                mapboxgl.accessToken = "";
+            }
+
             this.map = new mapboxgl.Map({
                 container: 'map',
                 style: this.props.styleUrl,
@@ -170,22 +208,39 @@ class Map extends React.Component <Props,IState> {
     
                         const mapName: string = this.map.getStyle().name || '';
 
-                        const spriteJsonUrl: string = this.map.getStyle().sprite + "@2x.json" || '';
-
-                        const spritePngUrl: string = this.map.getStyle().sprite + "@2x.png" || '';
+                        let spriteJsonUrl: string = this.map.getStyle().sprite + "@2x.json" || '';
+                        let spritePngUrl: string = this.map.getStyle().sprite + "@2x.png" || '';
 
                         fetch(spriteJsonUrl)
                             .then(res => res.json())
                             .then(
                                 (result) => {
 
-                                    this.props.mapLoaded(mapName,result,spritePngUrl);
+                                    this.props.styleLoaded(mapName,result,spritePngUrl);
                                 },
                                 // Note: it's important to handle errors here
                                 // instead of a catch() block so that we don't swallow
                                 // exceptions from actual bugs in components.
                                 (error) => {
-                                    console.log(error);
+                                    
+                                    spriteJsonUrl = this.map!.getStyle().sprite + ".json" || '';
+                                    spritePngUrl = this.map!.getStyle().sprite + ".png" || '';
+
+                                    fetch(spriteJsonUrl)
+                                        .then(res => res.json())
+                                        .then(
+                                            (result) => {
+
+                                                this.props.styleLoaded(mapName,result,spritePngUrl);
+                                            },
+                                            // Note: it's important to handle errors here
+                                            // instead of a catch() block so that we don't swallow
+                                            // exceptions from actual bugs in components.
+                                            (error) => {
+                                                
+                                                console.log(error);
+                                            }
+                                        );
                                 }
                             );
 
@@ -241,11 +296,14 @@ class Map extends React.Component <Props,IState> {
                 // Change the cursor to a pointer when the mouse is over the places layer.
                 this.map.on('mouseenter', 'markers', (e: any) => {
 
+                    // I don not know why it is a string, then we have to parse it
+                    let metadata = JSON.parse(e.features[0].properties.metadata);
+
                     e.target.getCanvas().style.cursor = 'pointer';
 
                     this.popup
                         .setLngLat(e.features[0].geometry.coordinates)
-                        .setHTML('<span>'+e.features[0].properties.title+'</span>')
+                        .setHTML('<span>'+metadata[0].title+'</span>')
                         .addTo(this.map!);
                 });
                 
@@ -256,7 +314,6 @@ class Map extends React.Component <Props,IState> {
 
                     this.popup.remove();
                 });
-
             }
         }
     }

@@ -1,45 +1,85 @@
+/* MIT License
+
+Copyright (c) 2019 Benoit Baudaux
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
 import React, { CSSProperties } from 'react';
+import { connect } from 'react-redux'
+
+import { StyleActionTypes, LoadingState } from './StyleReducerTypes';
+import { selectMarker } from './StyleReducerActions';
+
+import { RootState } from './RootReducer';
+
 import './Markers.css';
 
 interface IProps {
 
-    sprite: any;
-    imageUrl: string;
-    markerSelected: any;
+}
+
+interface StateProps {
+  sprite: any;
+  imageUrl: string;
+  selectedMarker: string;
+}
+
+interface DispatchProps {
+  selectMarker: (key: string) => void;
 }
 
 interface IState {
 
-    selectedMarker: string;
 }
 
-export default class Markers extends React.Component <IProps,IState> {
+type Props = StateProps & DispatchProps & IProps;
 
-  constructor(props: IProps) {
+function mapStateToProps(state: RootState, ownProps: IProps): StateProps {
+
+  return { sprite: state.style.sprite, imageUrl: state.style.imageUrl, selectedMarker: state.style.selectedMarker };
+}
+
+const mapDispatchToProps = {
+
+  selectMarker,
+};
+
+class Markers extends React.Component <Props,IState> {
+
+  constructor(props: Props) {
 
     super(props);
 
-    this.state = {selectedMarker: ''};
+    this.state = {};
   }
 
   componentDidUpdate() {
 
-    console.log(this.props.imageUrl);
-
-    if (this.state.selectedMarker === '') {
-
-      if (this.props.sprite) {
-          this.selectMarker(Object.keys(this.props.sprite)[0]);
+    if ( (this.props.selectedMarker === '') && (this.props.sprite) ) {
+          this.props.selectMarker(Object.keys(this.props.sprite)[0]);
       }
-      //console.log(this.props.sprite);
-  }
   }
 
   selectMarker(key: string) {
 
-    this.setState({selectedMarker:key});
-
-    this.props.markerSelected(key);
+    this.props.selectMarker(key);
   }
 
   getSprite(key: string): any {
@@ -59,7 +99,7 @@ export default class Markers extends React.Component <IProps,IState> {
         width: ''+(this.props.sprite[key].width*ratio)+'px',
         height: ''+(this.props.sprite[key].height*ratio)+'px',
         padding: '3px',
-        border: (this.state.selectedMarker === key)?'1px solid aquamarine':'1px solid #282830'
+        border: (this.props.selectedMarker === key)?'1px solid aquamarine':'1px solid #282830'
     };
 
     const style: CSSProperties = {
@@ -95,3 +135,4 @@ export default class Markers extends React.Component <IProps,IState> {
   }
 }
 
+export default connect(mapStateToProps, mapDispatchToProps)(Markers)

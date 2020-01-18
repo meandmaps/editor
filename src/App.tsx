@@ -1,11 +1,35 @@
+/* MIT License
+
+Copyright (c) 2019 Benoit Baudaux
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+*/
+
 import React from 'react';
 import './App.css';
 
 import Header from './Header';
-import Menu from './Menu';
+import LeftPanel from './LeftPanel';
 import Map from './Map';
 import Loader from './Loader';
 import PoiEditor from './PoiEditor';
+import Menu from './Menu';
 
 interface IProps {
 
@@ -13,12 +37,6 @@ interface IProps {
 
 interface IState {
 
-  openLoad: boolean;
-  styleUrl: string;
-  styleName: string;
-  sprite: any;
-  imageUrl: string;
-  selectedMarker: string;
 }
 
 export default class App extends React.Component <IProps,IState> {
@@ -29,53 +47,18 @@ export default class App extends React.Component <IProps,IState> {
 
     this.state = {
 
-      openLoad: true,
-      styleUrl: '',
-      styleName: '',
-      sprite: null,
-      imageUrl: '',
-      selectedMarker: '',
     };
   }
-
-  onLoad(url: string) {
-
-    console.log("onLoad :" + url);
-
-    this.setState({openLoad: false,styleUrl: url});
-  }
-
-  onClose() {
-
-    this.setState({openLoad: false});
-  }
-
-  displayLoader() {
-
-    if (this.state.openLoad)
-      return (<Loader loadHandler={(url: string) => this.onLoad(url)} closeHandler={() => this.onClose()}/>);
-    else
-      return;
-  }
-
-  mapLoaded(styleName: string, sprite: any, img: string) {
-
-    this.setState({styleName:styleName,sprite:sprite,imageUrl:img});
-  }
-
-  markerSelected(key: string) {
-
-    this.setState({selectedMarker: key});
-  }
-
+  
   render() {
     return (
       <div className="App">
-        <Header styleName={this.state.styleName}/>
-        <Menu sprite={this.state.sprite} imageUrl={this.state.imageUrl} markerSelected={(key: string) => this.markerSelected(key)}/>
-        <Map styleUrl={this.state.styleUrl} mapLoaded={(styleName: string, sprite: any, imageUrl: string) => this.mapLoaded(styleName,sprite,imageUrl)} marker={this.state.selectedMarker}/>
-        <PoiEditor imageUrl={this.state.imageUrl} sprite={this.state.sprite}/>
-        {this.displayLoader()}
+        <Header />
+        <LeftPanel />
+        <Map />
+        <PoiEditor />
+        <Menu />
+        <Loader />
       </div>
     );
   }

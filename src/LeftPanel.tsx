@@ -21,15 +21,60 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-.Markers {
+import React, { CSSProperties } from 'react';
+import { connect } from 'react-redux'
 
-    background-color: #282830;
-    
-    display: flex;
-    flex-wrap: wrap;
-    align-content: flex-start;
+import { LoadingState } from './StyleReducerTypes';
 
-    margin: 10px;
-    margin-bottom: 5px;
-    margin-top: 5px;
+import { RootState } from './RootReducer';
+
+import './LeftPanel.css';
+
+import Markers from './Markers';
+import PoiList from './PoiList';
+
+interface IProps {
+
 }
+
+interface StateProps {
+  loadingState: LoadingState;
+}
+
+interface DispatchProps {
+}
+
+interface IState {
+
+}
+
+type Props = StateProps & DispatchProps & IProps;
+
+function mapStateToProps(state: RootState, ownProps: IProps): StateProps {
+
+  return { loadingState: state.style.loadingState };
+}
+
+class LeftPanel extends React.Component <Props,IState> {
+
+  constructor(props: Props) {
+
+    super(props);
+  }
+
+  componentDidUpdate() {
+      
+  }
+
+  render() {
+
+    return (
+      <div className="LeftPanel">
+          <Markers />
+          <PoiList />
+      </div>
+    );
+  }
+}
+
+export default connect(mapStateToProps)(LeftPanel)

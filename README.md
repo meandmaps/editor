@@ -1,3 +1,6 @@
+# editor
+Editor of point of interest for maps using mapbox. Running editor is available here: https://maps.meandmaps.com/editor
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts

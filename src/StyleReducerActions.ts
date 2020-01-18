@@ -21,15 +21,45 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-.Markers {
+import { SELECT_STYLE, STYLE_LOADED, SELECT_MARKER, OPEN_MENU, CLOSE_MENU, CLEAR_STYLE, StyleActionTypes } from './StyleReducerTypes';
 
-    background-color: #282830;
-    
-    display: flex;
-    flex-wrap: wrap;
-    align-content: flex-start;
+export function selectStyle(style_url: string): StyleActionTypes {
+    return {
+        type: SELECT_STYLE,
+        styleUrl: style_url
+    }
+}
 
-    margin: 10px;
-    margin-bottom: 5px;
-    margin-top: 5px;
+export function styleLoaded(styleName: string, sprite: any, imageUrl: string): StyleActionTypes {
+    return {
+        type: STYLE_LOADED,
+        styleName: styleName,
+        sprite: sprite,
+        imageUrl: imageUrl
+    }
+}
+
+export function selectMarker(marker: string): StyleActionTypes {
+    return {
+        type: SELECT_MARKER,
+        marker: marker
+    }
+}
+
+export function openMenu(): StyleActionTypes {
+    return {
+        type: OPEN_MENU,
+    }
+}
+
+export function closeMenu(): StyleActionTypes {
+    return {
+        type: CLOSE_MENU,
+    }
+}
+
+export function clearStyle(): StyleActionTypes {
+    return {
+        type: CLEAR_STYLE,
+    }
 }
