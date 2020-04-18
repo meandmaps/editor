@@ -30,24 +30,25 @@ import { selectPoi, editPoi, removePoi } from './PoiReducerActions';
 
 import './PoiList.css';
 import { RootState } from './RootReducer';
-import { LoadingState } from './StyleReducerTypes';
+import { LoadingState, Sprite, Symbol } from './StyleReducerTypes';
 
 interface IProps {
 
 }
 
 interface StateProps {
-  poiList: Poi[],
-  selectedPoi: number,
+  poiList: Poi[];
+  selectedPoi: number;
   styleLoadingState: LoadingState;
-  sprite: any;
+  sprite: Sprite;
   imageUrl: string;
+  panelSize: [number,number];
 }
 
 interface DispatchProps {
-  selectPoi: (ref: number) => void,
-  editPoi: (ref: number) => void,
-  removePoi: (ref: number) => void,
+  selectPoi: (ref: number) => void;
+  editPoi: (ref: number) => void;
+  removePoi: (ref: number) => void;
 }
 
 interface IState {
@@ -63,7 +64,8 @@ function mapStateToProps(state: RootState, ownProps: IProps): StateProps {
         selectedPoi: state.poi.selectedPoi,
         styleLoadingState: state.style.loadingState,
         sprite: state.style.sprite,
-        imageUrl: state.style.imageUrl
+        imageUrl: state.style.imageUrl,
+        panelSize: state.style.panelSize,
     };
 }
 
@@ -76,6 +78,9 @@ const mapDispatchToProps = {
 
 class PoiList extends React.Component <Props,IState> {
 
+  private poiListRef = React.createRef<HTMLDivElement>();
+  private selectedPoiRef = React.createRef<HTMLLIElement>();
+
   constructor(props: Props) {
 
     super(props);
@@ -85,26 +90,35 @@ class PoiList extends React.Component <Props,IState> {
 
   getSymbol(key: string): any {
 
-    const marker: boolean = ("marker" in this.props.sprite[key]);
+    let symbol: Symbol;
 
-    const xRatio = 12.0/this.props.sprite[key].width;
-    const yRatio = 12.0/this.props.sprite[key].height;
+    if (key in this.props.sprite) {
+
+      symbol = this.props.sprite[key];
+    }
+    else {
+
+      return null;
+    }
+
+    const xRatio = 12.0/symbol.width;
+    const yRatio = 12.0/symbol.height;
 
     const ratio = (xRatio <= yRatio)?xRatio:yRatio;
 
     const topStyle: CSSProperties = {
 
-        width: ''+(this.props.sprite[key].width*ratio)+'px',
-        height: ''+(this.props.sprite[key].height*ratio)+'px',
+        width: ''+(symbol.width*ratio)+'px',
+        height: ''+(symbol.height*ratio)+'px',
         padding: '3px',
     };
 
     const style: CSSProperties = {
 
-        width: ''+this.props.sprite[key].width+'px',
-        height: ''+this.props.sprite[key].height+'px',
+        width: ''+symbol.width+'px',
+        height: ''+symbol.height+'px',
         backgroundImage: "url('"+this.props.imageUrl+"')",
-        backgroundPosition: ''+(-this.props.sprite[key].x)+'px '+(-this.props.sprite[key].y)+'px',
+        backgroundPosition: ''+(-symbol.x)+'px '+(-symbol.y)+'px',
         transform: 'scale('+ratio+')',
         transformOrigin: '0 0'
     };
@@ -116,7 +130,7 @@ class PoiList extends React.Component <Props,IState> {
 
     if (poi.ref == this.props.selectedPoi) {
 
-      return (<div className="UpdatePoi"><div className="UpdateAction" onClick={(e) => {this.props.editPoi(poi.ref); e.stopPropagation();} }>Edit</div><div className="UpdateAction" onClick={(e) => {this.props.removePoi(poi.ref); e.stopPropagation();}}>Delete</div></div>)
+      return (<div className="UpdatePoi"><div className="UpdateAction" onClick={(e) => {this.props.editPoi(poi.ref); e.stopPropagation();} }>Edit</div></div>);
     }
   }
 
@@ -132,6 +146,24 @@ class PoiList extends React.Component <Props,IState> {
 
   componentDidUpdate() {
     
+    //console.log("componentDidUpdate");
+
+    if (this.poiListRef.current) {
+
+      const parentBounds = this.poiListRef.current.getBoundingClientRect();
+
+      if (this.selectedPoiRef.current) {
+
+        const bounds = this.selectedPoiRef.current.getBoundingClientRect();
+
+        console.log(bounds);
+
+        if ( (bounds.top > parentBounds.bottom) || (bounds.bottom < parentBounds.top) ) {
+
+          this.selectedPoiRef.current.scrollIntoView(true);
+        }
+      }
+    }
   }
 
   getPoiTitle(poi: Poi) {
@@ -149,7 +181,7 @@ class PoiList extends React.Component <Props,IState> {
     
     return this.props.poiList.map((poi: Poi) => { return (
 
-          <li onClick={(e) => this.selectPoi(poi)} key={poi.ref}>
+          <li onClick={(e) => this.selectPoi(poi)} ref={poi.ref == this.props.selectedPoi ? this.selectedPoiRef:""}>
             
             <div className="Poi">
               {this.getSymbol(poi.symbol)}
@@ -169,7 +201,7 @@ class PoiList extends React.Component <Props,IState> {
 
     if (this.props.poiList.length > 0) {
       return (
-        <div className="PoiList">
+        <div className="PoiList" ref={this.poiListRef} style={{height:'calc(100% - '+((this.props.panelSize)?this.props.panelSize[1]:200)+'px - 35px)'}}>
           <ul>
             {this.renderPoi()}
           </ul>
@@ -180,7 +212,7 @@ class PoiList extends React.Component <Props,IState> {
 
       return (
 
-        <div className="noPoi">Select a symbol above and click long on the map for adding a POI</div>
+        <div className="noPoi">Select a symbol above and enter in edit mode for adding a POI.</div>
 
       );
     }

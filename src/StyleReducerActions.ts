@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import { SELECT_STYLE, STYLE_LOADED, SELECT_MARKER, OPEN_MENU, CLOSE_MENU, CLEAR_STYLE, StyleActionTypes } from './StyleReducerTypes';
+import { SELECT_STYLE, STYLE_LOADED, SELECT_MARKER, OPEN_MENU, CLOSE_MENU, CLEAR_STYLE, RESIZE_PANEL, StyleActionTypes } from './StyleReducerTypes';
 
 export function selectStyle(style_url: string): StyleActionTypes {
     return {
@@ -61,5 +61,13 @@ export function closeMenu(): StyleActionTypes {
 export function clearStyle(): StyleActionTypes {
     return {
         type: CLEAR_STYLE,
+    }
+}
+
+export function resizePanel(size: [number, number]): StyleActionTypes {
+
+    return {
+        type: RESIZE_PANEL,
+        panelSize: Object.assign([], size),
     }
 }

@@ -24,6 +24,11 @@ SOFTWARE.
 import React from 'react';
 import './App.css';
 
+import { connect } from 'react-redux'
+
+import { resizePanel } from './StyleReducerActions';
+import { RootState } from './RootReducer';
+
 import Header from './Header';
 import LeftPanel from './LeftPanel';
 import Map from './Map';
@@ -35,26 +40,113 @@ interface IProps {
 
 }
 
+interface StateProps {
+
+  panelSize: [number,number];
+}
+
+interface DispatchProps {
+  
+  resizePanel: (size: [number, number]) => void;
+}
+
 interface IState {
 
 }
 
-export default class App extends React.Component <IProps,IState> {
+type Props = StateProps & DispatchProps & IProps;
 
-  constructor(props: IProps) {
+function mapStateToProps(state: RootState, ownProps: IProps): StateProps {
+  
+  return { panelSize: state.style.panelSize };
+}
+
+const mapDispatchToProps = {
+  
+  resizePanel,
+};
+
+class App extends React.Component <Props,IState> {
+  
+  private originX: number = 0;
+  private originY: number = 0;
+  private verticalMoveActive: boolean = false;
+  private horizontalMoveActive: boolean = false;
+
+  constructor(props: Props) {
 
     super(props);
 
-    this.state = {
+    this.onMouseMove = this.onMouseMove.bind(this);
+    this.onMouseUp = this.onMouseUp.bind(this);
+    this.verticalMove = this.verticalMove.bind(this);
+    this.horizontalMove = this.horizontalMove.bind(this);
 
+    this.state = {
     };
+  }
+
+  onMouseMove(e: any) {
+
+    e.preventDefault();
+
+    if (this.verticalMoveActive) {
+
+      let panelSize = this.props.panelSize;
+
+      if (!panelSize)
+        panelSize = [260,200];
+
+      panelSize[0] += e.clientX-this.originX;
+
+      if (panelSize[0] < 150)
+        panelSize[0] = 150;
+
+      this.props.resizePanel(panelSize);
+
+      this.originX = e.clientX;
+    }
+    else if (this.horizontalMoveActive) {
+
+      let panelSize = this.props.panelSize;
+
+      if (!panelSize)
+        panelSize = [260,200];
+
+      panelSize[1] += e.clientY-this.originY;
+
+      if (panelSize[1] < 50)
+        panelSize[1] = 50;
+
+      this.props.resizePanel(panelSize);
+
+      this.originY = e.clientY;
+    }
+  }
+
+  onMouseUp(e: any) {
+
+    this.verticalMoveActive = false;
+    this.horizontalMoveActive = false;
+  }
+
+  verticalMove(x: number) {
+
+    this.verticalMoveActive = true;
+    this.originX = x;
+  }
+
+  horizontalMove(y: number) {
+
+    this.horizontalMoveActive = true;
+    this.originY = y;
   }
   
   render() {
     return (
-      <div className="App">
+      <div className="App" onMouseMove={ this.onMouseMove } onMouseUp={ this.onMouseUp } >
         <Header />
-        <LeftPanel />
+        <LeftPanel verticalMove={this.verticalMove} horizontalMove={this.horizontalMove}/>
         <Map />
         <PoiEditor />
         <Menu />
@@ -64,3 +156,4 @@ export default class App extends React.Component <IProps,IState> {
   }
 }
 
+export default connect(mapStateToProps,mapDispatchToProps)(App)

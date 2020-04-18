@@ -94,7 +94,7 @@ class Header extends React.Component <Props,IState> {
         return (
             <div className="Header">
                 
-                <div className="headerTitle"><a href="https://github.com/meandmaps/editor" target="_blank">me & maps editor</a><div className="headerVersion">v0.01</div></div>
+                <div className="headerTitle"><img src="logo_white.png" width="32" height="32"/><a href="https://github.com/meandmaps/editor" target="_blank">me & maps editor</a><div className="headerVersion">v0.2.0</div></div>
                 <div className="styleName" onClick={this.openMenuDialog}>{this.props.styleName}</div>
                 <div className="lastUpdate">Last update: {this.lastUpdate()}</div>
             </div>

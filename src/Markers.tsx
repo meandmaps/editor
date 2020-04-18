@@ -33,6 +33,7 @@ import './Markers.css';
 
 interface IProps {
 
+  height: number;
 }
 
 interface StateProps {
@@ -53,7 +54,11 @@ type Props = StateProps & DispatchProps & IProps;
 
 function mapStateToProps(state: RootState, ownProps: IProps): StateProps {
 
-  return { sprite: state.style.sprite, imageUrl: state.style.imageUrl, selectedMarker: state.style.selectedMarker };
+  return {
+    sprite: state.style.sprite,
+    imageUrl: state.style.imageUrl,
+    selectedMarker: state.style.selectedMarker,
+  };
 }
 
 const mapDispatchToProps = {
@@ -70,11 +75,25 @@ class Markers extends React.Component <Props,IState> {
     this.state = {};
   }
 
+  componentDidMount() {
+
+  }
+
   componentDidUpdate() {
 
     if ( (this.props.selectedMarker === '') && (this.props.sprite) ) {
-          this.props.selectMarker(Object.keys(this.props.sprite)[0]);
+          
+      for (let key in this.props.sprite) {
+
+        if (this.props.sprite[key].default) {
+
+          this.props.selectMarker(key);
+          return;
+        }
       }
+
+      this.props.selectMarker(Object.keys(this.props.sprite)[0]);
+    }
   }
 
   selectMarker(key: string) {
@@ -128,7 +147,7 @@ class Markers extends React.Component <Props,IState> {
   render() {
     
     return (
-      <div className="Markers">
+      <div className="Markers" style={{height:''+this.props.height+'px'}}>
         {this.getSprites()}
       </div>
     );

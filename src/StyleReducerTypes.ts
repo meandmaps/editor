@@ -29,6 +29,7 @@ export const SELECT_MARKER = 'SELECT_MARKER'
 export const OPEN_MENU = 'OPEN_MENU'
 export const CLOSE_MENU = 'CLOSE_MENU'
 export const CLEAR_STYLE = 'CLEAR_STYLE'
+export const RESIZE_PANEL = 'RESIZE_PANEL'
 
 export enum LoadingState {
     NONE = 0,
@@ -41,10 +42,22 @@ export interface StyleState {
     styleUrl: string;
     loadingState: LoadingState;
     styleName: string;
-    sprite: any;
+    sprite: Sprite;
     imageUrl: string;
     selectedMarker: string;
     menuOpened: boolean;
+    panelSize: [number, number];
+}
+
+export interface Sprite {
+    [key: string]: Symbol;
+}
+
+export interface Symbol {
+    width: number;
+    height: number;
+    x: number;
+    y: number;
 }
 
 interface SelectStyleAction extends Action {
@@ -55,7 +68,7 @@ interface SelectStyleAction extends Action {
 interface StyleLoadedAction extends Action {
     type: typeof STYLE_LOADED;
     styleName: string;
-    sprite: any;
+    sprite: Sprite;
     imageUrl: string;
 }
 
@@ -76,4 +89,9 @@ interface ClearStyleAction extends Action {
     type: typeof CLEAR_STYLE;
 }
 
-export type StyleActionTypes = SelectStyleAction | StyleLoadedAction | SelectMarkerAction | OpenMenuAction | CloseMenuAction | ClearStyleAction;
+interface ResizePanelAction extends Action {
+    type: typeof RESIZE_PANEL;
+    panelSize: [number, number];
+}
+
+export type StyleActionTypes = SelectStyleAction | StyleLoadedAction | SelectMarkerAction | OpenMenuAction | CloseMenuAction | ClearStyleAction | ResizePanelAction;

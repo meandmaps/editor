@@ -34,14 +34,18 @@ import { addPoi, selectPoi } from './PoiReducerActions';
 import { styleLoaded } from './StyleReducerActions';
 import { RootState } from './RootReducer';
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEdit } from '@fortawesome/free-solid-svg-icons'
+
 interface IProps {
-    
 }
 
 interface StateProps {
     poiList: Poi[];
     styleUrl: string;
     selectedMarker: string;
+    selectedPoi: number;
+    panelSize: [number,number];
 }
        
 interface DispatchProps {
@@ -52,13 +56,20 @@ interface DispatchProps {
 
 interface IState {
 
+    editMode: boolean;
 }
 
 type Props = StateProps & DispatchProps & IProps;
 
 function mapStateToProps(state: RootState, ownProps: IProps): StateProps {
 
-    return { poiList: state.poi.poiList, styleUrl: state.style.styleUrl, selectedMarker: state.style.selectedMarker };
+    return { 
+        poiList: state.poi.poiList,
+        selectedPoi: state.poi.selectedPoi,
+        styleUrl: state.style.styleUrl,
+        selectedMarker: state.style.selectedMarker,
+        panelSize: state.style.panelSize,
+    };
 }
 
 const mapDispatchToProps = {
@@ -70,40 +81,39 @@ const mapDispatchToProps = {
 
 class Map extends React.Component <Props,IState> {
 
+    private mapRef = React.createRef<HTMLDivElement>();
     private map: mapboxgl.Map | null = null;
 
     private currentStyleUrl: string;
 
-    private ADD_MARKER_TIMEOUT: number = 1000;
-    private timerId: number;
-    private mapMouseEvent: mapboxgl.MapMouseEvent|null;
-
     private popup: mapboxgl.Popup;
+
+    private do_not_move: boolean = false;
 
     constructor(props: Props) {
         
         super(props);
 
         this.currentStyleUrl = '';
-        this.timerId = 0;
-        this.mapMouseEvent = null;
 
-        this.state = {};
+        this.state = { editMode: false };
 
         this.popup = new mapboxgl.Popup({ closeButton: false, closeOnClick: false});
+
+        this.toggleEdit = this.toggleEdit.bind(this);
     }
 
-    addPoi() {
+    addPoi(e: mapboxgl.MapMouseEvent) {
 
-        if (this.mapMouseEvent != null) {
+        if (e != null) {
 
             const metadata = [ {lang:"fr", title:"Sans titre", desc:""} ];
 
             const poi: Poi = {
-                ref:Date.now(),
+                ref: Date.now(),
                 metadata: metadata,
                 photoUrl: "",
-                lngLat: this.mapMouseEvent.lngLat,
+                lngLat: e.lngLat,
                 symbol: this.props.selectedMarker,
                 symbolSize: 0.5
             };
@@ -136,13 +146,18 @@ class Map extends React.Component <Props,IState> {
                         },
                         'properties': {
                             'icon': poi.symbol,
-                            'icon-size': poi.symbolSize,
+                            'icon-size': (poi.ref == this.props.selectedPoi)?2*poi.symbolSize:poi.symbolSize,
                             'ref': poi.ref,
                             'metadata': poi.metadata,
                         }
                     };
                     
                     geojsondata.features.push(feature);
+
+                    if ( (!this.do_not_move) && (poi.ref == this.props.selectedPoi) ) {
+
+                        this.map.flyTo({center: poi.lngLat, zoom: 15});
+                    }
                 }
                 
                 source.setData(geojsondata);
@@ -150,18 +165,17 @@ class Map extends React.Component <Props,IState> {
         }
     }
 
-    clearMarkerTimeout() {
-
-        if (this.timerId != null) {
-            
-            window.clearTimeout(this.timerId);
-            this.timerId = 0;
-        }
-    }
-
     selectPoi(ref: number) {
 
+        this.do_not_move = true;
         this.props.selectPoi(ref);
+    }
+
+    toggleEdit() {
+
+        this.setState({editMode: !this.state.editMode});
+
+        this.do_not_move = true;
     }
 
     loadMap() {
@@ -266,24 +280,16 @@ class Map extends React.Component <Props,IState> {
 
                 this.map.on('mousedown', (e: mapboxgl.MapMouseEvent) => {
 
-                    this.clearMarkerTimeout();
-
-                    this.mapMouseEvent = e;
-                    
-                    this.timerId = window.setTimeout(() => {this.addPoi()},this.ADD_MARKER_TIMEOUT);
-                });
-
-                this.map.on('mouseup', (e: mapboxgl.MapMouseEvent) => {
-
-                    this.clearMarkerTimeout();
-                });
-
-                this.map.on('mousemove', (e: mapboxgl.MapMouseEvent) => {
-    
-                    this.clearMarkerTimeout();
+                    if (this.state.editMode) {
+                        
+                        this.addPoi(e);
+                    }
                 });
 
                 this.map.on('click', 'markers', (e: any) => {
+
+                    if (this.state.editMode)
+                        return;
 
                     if (e) {
 
@@ -295,6 +301,9 @@ class Map extends React.Component <Props,IState> {
 
                 // Change the cursor to a pointer when the mouse is over the places layer.
                 this.map.on('mouseenter', 'markers', (e: any) => {
+
+                    if (this.state.editMode)
+                        return;
 
                     // I don not know why it is a string, then we have to parse it
                     let metadata = JSON.parse(e.features[0].properties.metadata);
@@ -309,6 +318,9 @@ class Map extends React.Component <Props,IState> {
                 
                 // Change it back to a pointer when it leaves.
                 this.map.on('mouseleave', 'markers', (e: mapboxgl.MapMouseEvent) => {
+
+                    if (this.state.editMode)
+                        return;
 
                     e.target.getCanvas().style.cursor = '';
 
@@ -330,11 +342,27 @@ class Map extends React.Component <Props,IState> {
         this.loadMap();
 
         this.updateMarkers();
+
+        this.do_not_move = false;
+
+        if (this.map) {
+
+            this.map.resize();
+
+            if (this.state.editMode) {
+
+                this.map.getCanvas().style.cursor = 'crosshair';
+            }
+            else {
+
+                this.map.getCanvas().style.cursor = '';
+            }
+        }
     }
         
     render() {
         return (
-            <div id="map" className="Map"></div>
+            <div className="Map"><div id="map"></div><FontAwesomeIcon id="edit" className={(this.state.editMode == true) ? 'editOn' : 'editOff'} icon={faEdit} onClick={this.toggleEdit} /></div>
         );
     }
 }

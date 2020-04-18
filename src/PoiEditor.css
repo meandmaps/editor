@@ -46,6 +46,7 @@ SOFTWARE.
     flex-direction: row;
     justify-content: space-between;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.5), 0 6px 20px 0 rgba(0, 0, 0, 0.5);
+    border-radius: 5px;
 }
 
 input {
@@ -59,6 +60,16 @@ input {
 .PoiSymbol:hover {
 
     background-color: aquamarine;
+}
+
+#back {
+
+    font-size: 30px;
+}
+
+#back:hover {
+
+    color: aquamarine;
 }
 
 .PoiTitle {
@@ -109,6 +120,7 @@ input {
     color: white;
     resize: none;
     border: solid 1px white;
+    border-radius: 5px;
 }
 
 .PoiDesc:focus {
@@ -129,12 +141,13 @@ input {
     color: white;
     background-color: #303035;
     border: solid 1px white;
-    margin-top: 20px;
+    border-radius: 5px;
 }
 
 .PoiEditor > div > button:hover {
 
     background-color: aquamarine;
+    color: #303035;
 }
 
 .PoiPhoto {
@@ -189,6 +202,9 @@ input {
 .PhotoProp {
 
     border: 1px solid white;
+    border-radius: 5px;
+    line-height: 40px;
+    text-align: center;
 }
 
 .PhotoProp:hover {
@@ -219,4 +235,16 @@ input {
 
     width: 0px;
     visibility: hidden;
+}
+
+#removePoi {
+
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+}
+
+#removePoi:hover {
+
+    color: aquamarine;
 }

@@ -28,9 +28,16 @@ import mapboxgl from 'mapbox-gl';
 
 import './PoiEditor.css';
 
+import Markers from './Markers';
+
 import { Poi, PoiMetadata } from './PoiReducerTypes';
 import { RootState } from './RootReducer';
-import { editPoi, updatePoi } from './PoiReducerActions';
+import { editPoi, updatePoi, removePoi } from './PoiReducerActions';
+import { selectMarker } from './StyleReducerActions';
+import { Sprite, Symbol } from './StyleReducerTypes';
+
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTrash, faLongArrowAltLeft } from '@fortawesome/free-solid-svg-icons'
 
 interface IProps {
 
@@ -40,11 +47,14 @@ interface StateProps {
     poi: Poi|null,
     imageUrl: string;
     sprite: any;
+    selectedMarker: string;
 }
 
 interface DispatchProps {
-    editPoi: (ref: number) => void,
-    updatePoi: (poi: Poi) => void,
+    editPoi: (ref: number) => void;
+    updatePoi: (poi: Poi) => void;
+    removePoi: (ref: number) => void;
+    selectMarker: (key: string) => void;
 }
 
 interface IState {
@@ -60,6 +70,7 @@ interface IState {
     photoUrlShown: boolean;
     photoUrlInput: string;
     photoDimensions: any;
+    symbolsOpened: boolean;
 }
 
 type Props = StateProps & DispatchProps & IProps;
@@ -68,17 +79,17 @@ function mapStateToProps(state: RootState, ownProps: IProps): StateProps {
 
     if (state.poi.editedPoi == -1) {
 
-        return { poi: null, sprite: state.style.sprite, imageUrl: state.style.imageUrl };
+        return { poi: null, sprite: state.style.sprite, imageUrl: state.style.imageUrl, selectedMarker: state.style.selectedMarker, };
     }
     else {
 
         let poi = state.poi.poiList.find(poi => poi.ref == state.poi.editedPoi);
 
         if (poi != undefined) {      
-            return { poi: poi, sprite: state.style.sprite, imageUrl: state.style.imageUrl };
+            return { poi: poi, sprite: state.style.sprite, imageUrl: state.style.imageUrl, selectedMarker: state.style.selectedMarker, };
         }
         else {
-            return { poi: null, sprite: state.style.sprite, imageUrl: state.style.imageUrl };
+            return { poi: null, sprite: state.style.sprite, imageUrl: state.style.imageUrl, selectedMarker: state.style.selectedMarker, };
         }
     }
 }
@@ -86,7 +97,9 @@ function mapStateToProps(state: RootState, ownProps: IProps): StateProps {
 const mapDispatchToProps = {
 
     editPoi,
-    updatePoi
+    updatePoi,
+    removePoi,
+    selectMarker,
 };
 
 class PoiEditor extends React.Component <Props,IState> {
@@ -97,6 +110,9 @@ class PoiEditor extends React.Component <Props,IState> {
 
         super(props);
 
+        this.onOpenSymbols = this.onOpenSymbols.bind(this);
+        this.onCloseSymbols = this.onCloseSymbols.bind(this);
+        this.onApplySymbol = this.onApplySymbol.bind(this);
         this.onTitleChange = this.onTitleChange.bind(this);
         this.onDescChange = this.onDescChange.bind(this);
         this.onPhotoUrlChange = this.onPhotoUrlChange.bind(this);
@@ -131,6 +147,7 @@ class PoiEditor extends React.Component <Props,IState> {
                 photoUrlShown: false,
                 photoUrlInput: "",
                 photoDimensions: { width: 150, height: 100},
+                symbolsOpened: false,
             };
         }
         else {
@@ -149,38 +166,69 @@ class PoiEditor extends React.Component <Props,IState> {
                 photoUrlShown: false,
                 photoUrlInput: "",
                 photoDimensions: { width: 150, height: 100},
+                symbolsOpened: false,
             };
         }
+    }
+
+    onOpenSymbols() {
+
+        this.props.selectMarker(this.state.symbol);
+
+        this.setState({symbolsOpened:true});
+    }
+
+    onCloseSymbols() {
+
+        this.setState({symbolsOpened:false});
+    }
+
+    onApplySymbol() {
+
+        this.setState({symbol:this.props.selectedMarker});
+
+        this.setState({symbolsOpened:false});
     }
 
     getSymbol(key: string): any {
 
         if (key.length == 0)
             return null;
+
+        let symbol: Symbol;
+
+        if (key in this.props.sprite) {
+
+          symbol = this.props.sprite[key];
+        }
+        else {
+
+          return null;
+        }
     
-        const xRatio = 30.0/this.props.sprite[key].width;
-        const yRatio = 30.0/this.props.sprite[key].height;
+        const xRatio = 30.0/symbol.width;
+        const yRatio = 30.0/symbol.height;
     
         const ratio = (xRatio <= yRatio)?xRatio:yRatio;
     
         const topStyle: CSSProperties = {
     
-            width: ''+(this.props.sprite[key].width*ratio)+'px',
-            height: ''+(this.props.sprite[key].height*ratio)+'px',
+            width: ''+(symbol.width*ratio)+'px',
+            height: ''+(symbol.height*ratio)+'px',
             padding: '3px',
         };
     
         const style: CSSProperties = {
     
-            width: ''+this.props.sprite[key].width+'px',
-            height: ''+this.props.sprite[key].height+'px',
+            width: ''+symbol.width+'px',
+            height: ''+symbol.height+'px',
             backgroundImage: "url('"+this.props.imageUrl+"')",
-            backgroundPosition: ''+(-this.props.sprite[key].x)+'px '+(-this.props.sprite[key].y)+'px',
+            backgroundPosition: ''+(-symbol.x)+'px '+(-symbol.y)+'px',
             transform: 'scale('+ratio+')',
             transformOrigin: '0 0'
         };
         
-        return (<div className="PoiSymbol" style={topStyle}><div style={style}></div></div>);
+        return (<div className="PoiSymbol" style={topStyle} onClick={this.onOpenSymbols}><div style={style}></div></div>);
       }
 
     onTitleChange(event: any) {
@@ -313,32 +361,49 @@ class PoiEditor extends React.Component <Props,IState> {
     render() {
 
         if (this.props.poi != null) {
-            
-            return (
-                <div className="PoiEditor">
-                    <div>
-                        {this.getSymbol(this.state.symbol)}
-                        <input className="PoiTitle" placeholder="title" value={this.state.metadata!.find(e => e.lang === this.state.language)!.title} onChange={this.onTitleChange}></input>
-                        <select name="languages" className="PoiLanguage" onChange={this.onLangChange} value={this.state.language}>
-                            <option value="fr">fr</option>
-                            <option value="en">en</option>
-                            <option value="de">de</option>
-                            <option value="es">es</option>
-                            <option value="it">it</option>
-                            <option value="ch">ch</option>
-                            <option value="jp">jp</option>
-                        </select> 
-                        <textarea className="PoiDesc" placeholder="add a description here"  value={this.state.metadata!.find(e => e.lang === this.state.language)!.desc} onChange={this.onDescChange}></textarea>
-                        <div className="PoiProp" ><div>lon</div><input placeholder="lon" value={this.state.lon} onChange={this.onLonChange}></input></div>
-                        <div className="PoiProp" ><div>lat</div><input placeholder="lat" value={this.state.lat} onChange={this.onLatChange}></input></div>
-                        <div className="PoiProp" ><div>size</div><input placeholder="size" value={this.state.size} onChange={this.onSizeChange}></input></div>
-                        <div style={{width: 200}}></div>
-                        <img className="PhotoProp" style={this.state.photoDimensions} onClick={this.onOpenPhotoDialog} onLoad={this.onImgLoad} src={this.state.photoUrl} title="Click here for adding a picture" alt="Click here for adding a picture"></img>
-                        <input id="photoUrlInput" className={(this.state.photoUrlShown == true) ? 'inputShown' : 'inputHidden'} onClick={this.onClosePhotoDialog} value={this.state.photoUrlInput} onChange={this.onPhotoUrlChange}></input>
-                        <button onClick={this.onConfirm}>Done</button>
+
+            if (this.state.symbolsOpened) {
+
+                return (
+                    <div className="PoiEditor">
+                        <div>
+
+                            <FontAwesomeIcon id="back" icon={faLongArrowAltLeft} onClick={this.onCloseSymbols} />
+                            <Markers height={300} />
+                            <button onClick={this.onApplySymbol}>Apply</button>
+                        </div>
                     </div>
-                </div>
-            );
+                );
+            }
+            else {
+            
+                return (
+                    <div className="PoiEditor">
+                        <div>
+                            {this.getSymbol(this.state.symbol)}
+                            <input className="PoiTitle" placeholder="title" value={this.state.metadata!.find(e => e.lang === this.state.language)!.title} onChange={this.onTitleChange}></input>
+                            <select name="languages" className="PoiLanguage" onChange={this.onLangChange} value={this.state.language}>
+                                <option value="fr">fr</option>
+                                <option value="en">en</option>
+                                <option value="de">de</option>
+                                <option value="es">es</option>
+                                <option value="it">it</option>
+                                <option value="ch">ch</option>
+                                <option value="jp">jp</option>
+                            </select> 
+                            <textarea className="PoiDesc" placeholder="add a description here"  value={this.state.metadata!.find(e => e.lang === this.state.language)!.desc} onChange={this.onDescChange}></textarea>
+                            <div className="PoiProp" ><div>lon</div><input placeholder="lon" value={this.state.lon} onChange={this.onLonChange}></input></div>
+                            <div className="PoiProp" ><div>lat</div><input placeholder="lat" value={this.state.lat} onChange={this.onLatChange}></input></div>
+                            <div className="PoiProp" ><div>size</div><input placeholder="size" value={this.state.size} onChange={this.onSizeChange}></input></div>
+                            <div style={{width: 200}}></div>
+                            <img className="PhotoProp" style={this.state.photoDimensions} onClick={this.onOpenPhotoDialog} onLoad={this.onImgLoad} src={this.state.photoUrl} title="Click here for adding a picture" alt="Click here for adding a picture"></img>
+                            <input id="photoUrlInput" className={(this.state.photoUrlShown == true) ? 'inputShown' : 'inputHidden'} onClick={this.onClosePhotoDialog} value={this.state.photoUrlInput} onChange={this.onPhotoUrlChange}></input>
+                            <button onClick={this.onConfirm}>Done</button>
+                            <FontAwesomeIcon id="removePoi" icon={faTrash} onClick={(e) => {this.props.removePoi(this.props.poi!.ref); this.props.editPoi(-1); }} />
+                        </div>
+                    </div>
+                );
+            }
         }
         else {
 

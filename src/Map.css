@@ -23,6 +23,13 @@ SOFTWARE.
 
 .Map {
     flex: 1;
+    position: relative;
+}
+
+.mapboxgl-map {
+
+	width: 100%;
+	height: 100%;
 }
 
 .mapboxgl-popup {
@@ -34,3 +41,29 @@ SOFTWARE.
 
     padding: 5px;
 }
+
+#edit {
+
+	width: 32px;
+	height: 32px;
+	position: absolute;
+    top: 10px;
+    left: 10px;
+    border-radius: 5px;
+}
+
+.editOn {
+
+	color: red;
+}
+
+.editOff {
+
+	color: #303035;
+}
+
+.editOff:hover {
+
+	color: aquamarine;
+}
+

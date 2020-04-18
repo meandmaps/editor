@@ -38,6 +38,11 @@ SOFTWARE.
     display: flex;
 }
 
+.headerTitle > img {
+
+    margin-right: 10px;
+}
+
 a {
     color: white;
     text-decoration: none; /* no underline */

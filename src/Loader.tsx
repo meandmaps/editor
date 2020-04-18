@@ -66,7 +66,7 @@ class Loader extends React.Component <Props,IState> {
 
         super(props);
 
-        this.state = {styleUrl: 'https://maps.meandmaps.com/lesarcs/style_lesarcs.json'};
+        this.state = {styleUrl: 'https://<path>/style.json'};
 
         this.onChange = this.onChange.bind(this);
         this.onLoad = this.onLoad.bind(this);
@@ -77,9 +77,20 @@ class Loader extends React.Component <Props,IState> {
         this.setState({styleUrl: event.target.value});
     }
 
+    validURL(str: string) {
+      var pattern = new RegExp('^(https?:\\/\\/)?'+ // protocol
+        '((([a-z\\d]([a-z\\d-]*[a-z\\d])*)\\.)+[a-z]{2,}|'+ // domain name
+        '((\\d{1,3}\\.){3}\\d{1,3}))'+ // OR ip (v4) address
+        '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'+ // port and path
+        '(\\?[;&a-z\\d%_.~+=-]*)?'+ // query string
+        '(\\#[-a-z\\d_]*)?$','i'); // fragment locator
+      return !!pattern.test(str);
+    }
+
     onLoad(e: any) {
 
-        this.props.selectStyle(this.state.styleUrl);
+        if (this.validURL(this.state.styleUrl))
+            this.props.selectStyle(this.state.styleUrl);
     }
 
     render() {

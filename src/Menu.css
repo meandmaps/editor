@@ -34,27 +34,55 @@ SOFTWARE.
 
     background-color: #303035;
     position: absolute;
-    width: 250px;
-    height: 150px;
-    left: calc(50% - 100px);
-    top: calc(50% - 50px);
-    display: flex;
-    justify-content: space-around;
+    width: 400px;
+    height: 400px;
+    left: calc(50% - 200px);
+    top: calc(50% - 200px);
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.5), 0 6px 20px 0 rgba(0, 0, 0, 0.5);
+    border-radius: 5px;
     color: white;
+    padding: 20px;
     display: flex;
     flex-direction: column;
+    justify-content: space-between;
 }
 
-.MenuList {
+#confirmation > div {
 
-    margin: 20px;
-    text-align: center;
+    margin-top: 50px;
+    display: flex;
+    justify-content: space-evenly;
+}
+
+#confirmation > div > button {
+
+    width: 80px;
+    font-size: 16px;
+    color: white;
+    background-color: #303035;
+    border: solid 1px white;
+    border-radius: 5px;
+    padding: 5px;
+}
+
+#confirmation > div > button:hover {
+
+    background-color: aquamarine;
+    color: #303035;
 }
 
 .MenuItem {
     
+    margin-top: 10px;
     margin-bottom: 10px;
+    text-align: center;
+    background-color: #282830;
+    border-radius: 5px;
+}
+
+.NewMenuItem {
+    
+    margin-top: 200px;
 }
 
 .MenuItem:hover {
@@ -63,3 +91,54 @@ SOFTWARE.
     color: aquamarine;
 }
 
+#importBox {
+
+    display: flex;
+    flex-direction: column;
+}
+
+#importBox > input {
+
+    margin-top: 10px;
+    padding: 5px;
+    background: none;
+    font-size: 16px;
+}
+
+#importBox > button {
+
+    font-size: 16px;
+    color: white;
+    background-color: #303035;
+    border: solid 1px white;
+    width: 150px;
+    margin: auto;
+    padding: 5px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+}
+
+#importBox > button:hover {
+
+    background-color: aquamarine;
+}
+
+#importBox > div {
+
+    margin: 5px;
+}
+
+#fileInput {
+
+    display: none;
+}
+
+#email {
+    width: 100%;
+    font-size: 18px;
+}
+
+#email:hover {
+
+    border-bottom: 1px solid aquamarine;
+}

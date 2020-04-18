@@ -23,10 +23,12 @@ SOFTWARE.
 
 .PoiList {
 
-    flex: 1 1;
-    margin: 10px;
-    margin-top: 5px;
-    overflow: scroll;
+    margin-left: 10px;
+    margin-right: 10px;
+    margin-top: 10px;
+    margin-bottom: 0px;
+    height: calc(100% - 200px - 30px);
+    width: calc(100% - 20px);
 }
 
 ul {
@@ -34,6 +36,9 @@ ul {
     list-style-type: none;
     padding: 0;
     margin: 0;
+    height: 100%;
+    overflow-y: scroll;
+    overflow-x: hidden;
 }
 
 li {
@@ -85,5 +90,10 @@ li:hover {
 .UpdateAction {
 
     font-style: italic;
-    font-weight: lighter;
+    font-weight: light;
+}
+
+.UpdateAction:hover {
+
+    text-decoration: underline;
 }

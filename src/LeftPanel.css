@@ -21,12 +21,43 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-.LeftPanel {
+#LeftPanel {
 
-    width: 250px;
+    width: 260px;
     height: calc(100% - 30px);
     background-color: #303035;
-
     display: flex;
-    flex-direction: column;
+    justify-content: space-between;
+}
+
+#menu {
+
+    width: 100%;
+    width: calc(100% - 5px);
+}
+
+#verticalBorder {
+
+    width: 3px;
+    height: 100%;
+    background-color: grey;
+}
+
+#verticalBorder:hover {
+
+	cursor: col-resize;
+	background-color: white;
+}
+
+#horizontalBorder {
+
+    height: 3px;
+    width: 100%;
+    background-color: grey;
+}
+
+#horizontalBorder:hover {
+
+	cursor: row-resize;
+	background-color: white;
 }

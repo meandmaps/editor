@@ -24,8 +24,6 @@ SOFTWARE.
 import React, { CSSProperties } from 'react';
 import { connect } from 'react-redux'
 
-import { LoadingState } from './StyleReducerTypes';
-
 import { RootState } from './RootReducer';
 
 import './LeftPanel.css';
@@ -35,10 +33,13 @@ import PoiList from './PoiList';
 
 interface IProps {
 
+  verticalMove(x: number): void,
+  horizontalMove(y: number): void,
 }
 
 interface StateProps {
-  loadingState: LoadingState;
+
+  panelSize: [number,number];
 }
 
 interface DispatchProps {
@@ -51,8 +52,8 @@ interface IState {
 type Props = StateProps & DispatchProps & IProps;
 
 function mapStateToProps(state: RootState, ownProps: IProps): StateProps {
-
-  return { loadingState: state.style.loadingState };
+  
+  return { panelSize: state.style.panelSize };
 }
 
 class LeftPanel extends React.Component <Props,IState> {
@@ -60,18 +61,35 @@ class LeftPanel extends React.Component <Props,IState> {
   constructor(props: Props) {
 
     super(props);
+
+    this.onVerticalBorder = this.onVerticalBorder.bind(this);
+    this.onHorizontalBorder = this.onHorizontalBorder.bind(this);
   }
 
-  componentDidUpdate() {
-      
+  onVerticalBorder(e: any) {
+
+    e.preventDefault();
+
+    this.props.verticalMove(e.clientX);
+  }
+
+  onHorizontalBorder(e: any) {
+
+    e.preventDefault();
+
+    this.props.horizontalMove(e.clientY);
   }
 
   render() {
 
     return (
-      <div className="LeftPanel">
-          <Markers />
+      <div id="LeftPanel" style={{width:''+((this.props.panelSize)?this.props.panelSize[0]:260)+'px'}}>
+        <div id="menu">
+          <Markers height={(this.props.panelSize)?this.props.panelSize[1]:200}/>
+          <div id="horizontalBorder" onMouseDown={ this.onHorizontalBorder }></div>
           <PoiList />
+        </div>
+        <div id="verticalBorder" onMouseDown={ this.onVerticalBorder }></div>
       </div>
     );
   }

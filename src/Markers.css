@@ -30,6 +30,8 @@ SOFTWARE.
     align-content: flex-start;
 
     margin: 10px;
-    margin-bottom: 5px;
-    margin-top: 5px;
+
+    height: 200px;
+    width: calc(100% - 20px);
+	overflow-y: scroll;
 }

@@ -33,6 +33,7 @@ import {
   OPEN_MENU,
   CLOSE_MENU,
   CLEAR_STYLE,
+  RESIZE_PANEL,
 } from './StyleReducerTypes'
 
 const initialState: StyleState = {
@@ -43,6 +44,7 @@ const initialState: StyleState = {
     imageUrl: "",
     selectedMarker: "",
     menuOpened: false,
+    panelSize: [260,200],
 }
 
 export const styleReducer: Reducer<StyleState, StyleActionTypes> = (state: StyleState = initialState, action: StyleActionTypes) => {
@@ -91,6 +93,11 @@ export const styleReducer: Reducer<StyleState, StyleActionTypes> = (state: Style
             sprite: {},
             imageUrl: "",
             menuOpened: false,
+        }
+    case RESIZE_PANEL:
+        return {
+            ...state,
+            panelSize: action.panelSize,
         }
     default:
       return state
