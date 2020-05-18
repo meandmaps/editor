@@ -1,5 +1,12 @@
-# editor
-Editor of point of interest for maps using mapbox. Running editor is available here: https://maps.meandmaps.com/editor
+# POI editor
+Editor of point of interest for maps using mapbox style specification. Running editor is available here: https://maps.meandmaps.com/editor
+
+## Basic features
+
+- Add POI (title, description, symbol, link, photos, videos)
+- Export to GeoJSON/Kml file
+- Import from geojson/kmz/kml
+- Multi languages support for title/description/link
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 

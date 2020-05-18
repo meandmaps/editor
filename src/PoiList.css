@@ -31,7 +31,7 @@ SOFTWARE.
     width: calc(100% - 20px);
 }
 
-ul {
+.PoiList > ul {
 
     list-style-type: none;
     padding: 0;
@@ -41,7 +41,7 @@ ul {
     overflow-x: hidden;
 }
 
-li {
+.PoiList > ul > li {
 
     background-color: #282830;
     color: white;
@@ -52,7 +52,7 @@ li {
     flex-direction: column;
 }
 
-li:hover {
+.PoiList > ul > li:hover {
 
     cursor: pointer;
 }

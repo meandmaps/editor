@@ -156,8 +156,6 @@ class PoiList extends React.Component <Props,IState> {
 
         const bounds = this.selectedPoiRef.current.getBoundingClientRect();
 
-        console.log(bounds);
-
         if ( (bounds.top > parentBounds.bottom) || (bounds.bottom < parentBounds.top) ) {
 
           this.selectedPoiRef.current.scrollIntoView(true);
@@ -181,7 +179,7 @@ class PoiList extends React.Component <Props,IState> {
     
     return this.props.poiList.map((poi: Poi) => { return (
 
-          <li onClick={(e) => this.selectPoi(poi)} ref={poi.ref == this.props.selectedPoi ? this.selectedPoiRef:""}>
+          <li onClick={(e) => this.selectPoi(poi)} key={poi.ref} ref={poi.ref == this.props.selectedPoi ? this.selectedPoiRef:""}>
             
             <div className="Poi">
               {this.getSymbol(poi.symbol)}

@@ -21,7 +21,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 */
 
-import { Poi, ADD_POI, REMOVE_POI, SELECT_POI, EDIT_POI, UPDATE_POI, CLEAR_POI, PoiActionTypes } from './PoiReducerTypes';
+import { Poi, ADD_POI, REMOVE_POI, SELECT_POI, EDIT_POI, UPDATE_POI, MOVE_POI, CLEAR_POI, PoiActionTypes } from './PoiReducerTypes';
 
 export function addPoi(newPoi: Poi): PoiActionTypes {
     return {
@@ -55,6 +55,14 @@ export function updatePoi(poi: Poi): PoiActionTypes {
     return {
         type: UPDATE_POI,
         poi: poi
+    }
+}
+
+export function movePoi(ref: number, lngLat: mapboxgl.LngLat): PoiActionTypes {
+    return {
+        type: MOVE_POI,
+        ref: ref,
+        lngLat: lngLat
     }
 }
 

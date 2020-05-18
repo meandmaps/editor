@@ -30,14 +30,14 @@ import './PoiEditor.css';
 
 import Markers from './Markers';
 
-import { Poi, PoiMetadata } from './PoiReducerTypes';
+import { Poi, PoiMetadata, Photo } from './PoiReducerTypes';
 import { RootState } from './RootReducer';
 import { editPoi, updatePoi, removePoi } from './PoiReducerActions';
 import { selectMarker } from './StyleReducerActions';
 import { Sprite, Symbol } from './StyleReducerTypes';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTrash, faLongArrowAltLeft } from '@fortawesome/free-solid-svg-icons'
+import { faTrash, faLongArrowAltLeft, faCameraRetro, faTimes } from '@fortawesome/free-solid-svg-icons'
 
 interface IProps {
 
@@ -65,12 +65,12 @@ interface IState {
     lat: string;
     size: string;
     symbol: string;
-    photoUrl: string;
+    photos: Array<Photo>;
     language: string;
     photoUrlShown: boolean;
     photoUrlInput: string;
-    photoDimensions: any;
     symbolsOpened: boolean;
+    newLanguagesOpened: boolean;
 }
 
 type Props = StateProps & DispatchProps & IProps;
@@ -119,10 +119,16 @@ class PoiEditor extends React.Component <Props,IState> {
         this.onLonChange = this.onLonChange.bind(this);
         this.onLatChange = this.onLatChange.bind(this);
         this.onSizeChange = this.onSizeChange.bind(this);
-        this.onLangChange = this.onLangChange.bind(this);
-        this.onOpenPhotoDialog = this.onOpenPhotoDialog.bind(this);
-        this.onClosePhotoDialog = this.onClosePhotoDialog.bind(this);
+        this.onSelectLanguage = this.onSelectLanguage.bind(this);
+        this.onLinkChange = this.onLinkChange.bind(this);
+        this.onLinkLabelChange = this.onLinkLabelChange.bind(this);
+        this.onOpenClosePhotoDialog = this.onOpenClosePhotoDialog.bind(this);
         this.onImgLoad = this.onImgLoad.bind(this);
+        this.onRemovePhoto = this.onRemovePhoto.bind(this);
+        this.onToggleLanguages = this.onToggleLanguages.bind(this);
+        this.closeNewLanguages = this.closeNewLanguages.bind(this);
+        this.addLanguage = this.addLanguage.bind(this);
+        this.onDelete = this.onDelete.bind(this);
 
         this.onConfirm = this.onConfirm.bind(this);
 
@@ -132,8 +138,14 @@ class PoiEditor extends React.Component <Props,IState> {
 
             let metadata = this.props.poi.metadata;
 
-            if ( (metadata == null) || (metadata.length == 0) )
-                metadata = [ {lang:"fr", title:"Sans titre", desc:""} ];
+            if ( (metadata == null) || (metadata.length == 0) ) {
+                metadata = [ {lang:"fr", title:"Sans titre", desc:"", link: "", linkLabel: ""} ];
+            }
+
+            let photos = this.props.poi.photos;
+
+            if (photos == null)
+                photos = [];
 
             this.state = {
                 ref: this.props.poi.ref,
@@ -143,16 +155,16 @@ class PoiEditor extends React.Component <Props,IState> {
                 lat: ""+this.props.poi.lngLat.lat,
                 size: ""+this.props.poi.symbolSize,
                 symbol: this.props.poi.symbol,
-                photoUrl: this.props.poi.photoUrl,
+                photos: photos,
                 photoUrlShown: false,
                 photoUrlInput: "",
-                photoDimensions: { width: 150, height: 100},
                 symbolsOpened: false,
+                newLanguagesOpened: false,
             };
         }
         else {
 
-            const metadata = [ {lang:"fr", title:"Sans titre", desc:""} ];
+            const metadata = [ {lang:"fr", title:"Sans titre", desc:"", link: "", linkLabel: ""} ];
 
             this.state = {
                 ref: -1,
@@ -162,11 +174,11 @@ class PoiEditor extends React.Component <Props,IState> {
                 lat: "",
                 size: "",
                 symbol: "",
-                photoUrl: "",
+                photos: [],
                 photoUrlShown: false,
                 photoUrlInput: "",
-                photoDimensions: { width: 150, height: 100},
                 symbolsOpened: false,
+                newLanguagesOpened: false,
             };
         }
     }
@@ -229,7 +241,7 @@ class PoiEditor extends React.Component <Props,IState> {
         };
         
         return (<div className="PoiSymbol" style={topStyle} onClick={this.onOpenSymbols}><div style={style}></div></div>);
-      }
+    }
 
     onTitleChange(event: any) {
 
@@ -274,10 +286,15 @@ class PoiEditor extends React.Component <Props,IState> {
             lngLat: new mapboxgl.LngLat(parseFloat(this.state.lon),parseFloat(this.state.lat)),
             symbolSize: parseFloat(this.state.size),
             symbol: this.state.symbol,
-            photoUrl: this.state.photoUrl,
+            photos: this.state.photos,
         });
 
         this.props.editPoi(-1);
+    }
+
+    componentDidMount() {
+
+        
     }
 
     componentDidUpdate() {
@@ -287,7 +304,14 @@ class PoiEditor extends React.Component <Props,IState> {
             let metadata = this.props.poi.metadata;
 
             if ( (metadata == null) || (metadata.length == 0) )
-                metadata = [ {lang:"fr", title:"Sans titre", desc:""} ];
+                metadata = [ {lang:"fr", title:"Sans titre", desc:"", link: "", linkLabel: ""} ];
+
+            let lang = this.state.language;
+
+            if (!metadata.find(e => e.lang === this.state.language)) {
+
+                lang = metadata[0].lang;
+            }
 
             this.setState({
                 ref: this.props.poi.ref,
@@ -296,21 +320,156 @@ class PoiEditor extends React.Component <Props,IState> {
                 lat: ""+this.props.poi.lngLat.lat,
                 size: ""+this.props.poi.symbolSize,
                 symbol: this.props.poi.symbol,
-                photoUrl: this.props.poi.photoUrl,
+                photos: this.props.poi.photos,
+                language: lang,
             });
         }
     }
 
-    onLangChange(event: any) {
+    onSelectLanguage(lang: string) {
 
-        const lang = event.target.value;
+        this.setState({
+
+            language: lang,
+        });
+    }
+
+    onLinkChange(event: any) {
+
+        this.state.metadata!.find(e => e.lang === this.state.language)!.link = event.target.value;
+        
+        this.setState({metadata:this.state.metadata});
+    }
+
+    onLinkLabelChange(event: any) {
+
+        this.state.metadata!.find(e => e.lang === this.state.language)!.linkLabel = event.target.value;
+        
+        this.setState({metadata:this.state.metadata});
+    }
+
+    onImgLoad(event: any, photo: Photo) {
+
+        photo.width = event.target.naturalWidth;
+        photo.height = event.target.naturalHeight;
+
+        if (event.target.naturalHeight < event.target.naturalWidth) {
+
+            event.target.style.width = "100%";
+            event.target.style.height = "unset";
+        }
+        else {
+
+            event.target.style.height = "100%";
+            event.target.style.width = "unset";
+        }
+
+        this.setState({photos: this.state.photos});
+    }
+
+    onOpenClosePhotoDialog(event: any) {
+
+        if (this.state.photoUrlShown) {
+
+            this.setState({photoUrlShown: false});
+
+            if (this.state.photoUrlInput.length > 0) {
+
+                this.setState({photos: [...this.state.photos,{url:this.state.photoUrlInput,width:-1,height:-1}]});
+            }
+        }
+        else {
+            this.photoUrlUpdated = false;
+            
+            this.setState({photoUrlShown: true, photoUrlInput:""});
+        }
+    }
+
+    onRemovePhoto(event: any, photoIndex: number) {
+
+        this.state.photos.splice(photoIndex-1,1);
+
+        this.setState({photos: this.state.photos});
+    }
+
+    onDelete() {
+
+        if (this.state.metadata.length == 1) {
+            // Only one language: remove POI
+            this.props.removePoi(this.props.poi!.ref);
+            this.props.editPoi(-1);
+        }
+        else {
+            // More than one language: remove current language
+
+            let metadata = this.state.metadata.filter(m => { return (m.lang != this.state.language) });
+
+            this.setState({
+                metadata: metadata,
+                language: metadata[0].lang,
+            });
+        }
+    }
+
+    renderPhotosVideos() {
+
+        let photoIndex = 0;
+
+        let li = this.state.photos.map((photo: Photo) => { photoIndex += 1; if ( (photo.url.indexOf("youtube") < 0) && (photo.url.indexOf("youtu.be") < 0) && (photo.url.indexOf("vimeo") < 0) && (photo.url.indexOf("dailymotion") < 0) ) { return (
+
+                <li>
+                    <img src={photo.url} onLoad={(function (_photo,_this) {
+
+                                return function (event: any) {
+
+                                    _this.onImgLoad(event,_photo);
+                                }
+
+                            }) (photo,this)}></img>
+
+                    <FontAwesomeIcon icon={faTimes} className="PhotoTrash" onClick={(function (_photoIndex,_this) {
+
+                                return function (event: any) {
+
+                                    _this.onRemovePhoto(event,_photoIndex);
+                                }
+
+                            }) (photoIndex,this)}/>
+                </li>
+            );
+            }
+            else {
+
+                return (
+
+                    <li>
+                        <iframe width="130" height="73" src={photo.url}></iframe>
+
+                        <FontAwesomeIcon icon={faTimes} className="PhotoTrash" onClick={(function (_photoIndex,_this) {
+
+                            return function (event: any) {
+
+                                _this.onRemovePhoto(event,_photoIndex);
+                            }
+
+                        }) (photoIndex,this)}/>
+                    </li>
+                );
+            }
+        });
+
+        li.unshift((<li style={{width:"70px",minWidth: "70px"}}><FontAwesomeIcon icon={faCameraRetro} style={{margin:"auto",fontSize:"40px"}} onClick={this.onOpenClosePhotoDialog}/><input id="photoUrlInput" className={(this.state.photoUrlShown == true) ? 'inputShown' : 'inputHidden'} value={this.state.photoUrlInput} onChange={this.onPhotoUrlChange} placeholder="Enter URL of photo or video"></input></li>));
+
+        return li;
+    }
+
+    addLanguage(lang: string) {
+
+        console.log('addLanguage:'+lang);
 
         let metadata = this.state.metadata;
 
-        if (metadata!.find(e => e.lang === lang) == null) {
-
-            metadata.push({ lang:lang, title:"", desc: ""});
-        }
+        metadata.push({ lang:lang, title:"", desc: "", link: "", linkLabel: ""});
 
         this.setState({
 
@@ -319,43 +478,41 @@ class PoiEditor extends React.Component <Props,IState> {
         });
     }
 
-    onImgLoad(event: any) {
+    renderNewLanguages() {
 
-        console.log(event.target.naturalHeight);
-        console.log(event.target.naturalWidth);
+        if (this.state.newLanguagesOpened) {
 
-        if (event.target.naturalHeight < event.target.naturalWidth) {
+            const newLanguages = ['fr','en','de','es','it','ch','jp'];
 
-            this.setState({
-                photoDimensions: { width: 150, height: (150*event.target.naturalHeight)/event.target.naturalWidth},
-            });
-        }
-        else {
-
-            this.setState({
-                photoDimensions: { width: (100*event.target.naturalWidth)/event.target.naturalHeight, height: 100},
-            });
+            return (<div id="NewLanguages">
+                        {
+                            newLanguages.filter(lang => !(this.state.metadata!.map(e => e.lang).includes(lang))).map(l => { return (<div onClick={ev => this.addLanguage(l)}>{l}</div>); })
+                        }
+                    </div>
+                );
         }
     }
 
-    onOpenPhotoDialog(event: any) {
+    renderLanguages() {
 
-        if (this.state.photoUrlShown) {
-
-            this.setState({photoUrlShown: false, photoUrl:this.state.photoUrlInput});
-        }
-        else {
-            this.photoUrlUpdated = false;
-            this.setState({photoUrlShown: true, photoUrlInput:this.state.photoUrl});
-        }
+        return (    <div className="PoiLanguages">
+                        {this.state.metadata!.map(e => {return (<div className={(this.state.language == e.lang) ? 'languageSelected' : ''} onClick={ev => this.onSelectLanguage(e.lang)}>{e.lang}</div>)})}
+                        <button id="NewLanguage" onClick={this.onToggleLanguages}>add language{this.renderNewLanguages()}</button>
+                        
+                    </div>
+                );
     }
 
-    onClosePhotoDialog(event: any) {
+    onToggleLanguages(e: any) {
 
-        if (this.photoUrlUpdated) {
+        this.setState({newLanguagesOpened: !this.state.newLanguagesOpened});
 
-            this.setState({photoUrlShown: false, photoUrl:this.state.photoUrlInput});
-        }
+        e.stopPropagation();
+    }
+
+    closeNewLanguages() {
+
+        this.setState({newLanguagesOpened: false});
     }
 
     render() {
@@ -367,7 +524,6 @@ class PoiEditor extends React.Component <Props,IState> {
                 return (
                     <div className="PoiEditor">
                         <div>
-
                             <FontAwesomeIcon id="back" icon={faLongArrowAltLeft} onClick={this.onCloseSymbols} />
                             <Markers height={300} />
                             <button onClick={this.onApplySymbol}>Apply</button>
@@ -379,27 +535,20 @@ class PoiEditor extends React.Component <Props,IState> {
             
                 return (
                     <div className="PoiEditor">
-                        <div>
-                            {this.getSymbol(this.state.symbol)}
-                            <input className="PoiTitle" placeholder="title" value={this.state.metadata!.find(e => e.lang === this.state.language)!.title} onChange={this.onTitleChange}></input>
-                            <select name="languages" className="PoiLanguage" onChange={this.onLangChange} value={this.state.language}>
-                                <option value="fr">fr</option>
-                                <option value="en">en</option>
-                                <option value="de">de</option>
-                                <option value="es">es</option>
-                                <option value="it">it</option>
-                                <option value="ch">ch</option>
-                                <option value="jp">jp</option>
-                            </select> 
+                        <div onClick={this.closeNewLanguages}>
+                            {this.getSymbol(this.state.symbol)}{this.renderLanguages()}
+                            <input className="PoiTitle" placeholder="title" value={this.state.metadata!.find(e => e.lang === this.state.language)!.title} onChange={this.onTitleChange} style={{marginLeft:"auto"}}></input>
                             <textarea className="PoiDesc" placeholder="add a description here"  value={this.state.metadata!.find(e => e.lang === this.state.language)!.desc} onChange={this.onDescChange}></textarea>
-                            <div className="PoiProp" ><div>lon</div><input placeholder="lon" value={this.state.lon} onChange={this.onLonChange}></input></div>
-                            <div className="PoiProp" ><div>lat</div><input placeholder="lat" value={this.state.lat} onChange={this.onLatChange}></input></div>
-                            <div className="PoiProp" ><div>size</div><input placeholder="size" value={this.state.size} onChange={this.onSizeChange}></input></div>
-                            <div style={{width: 200}}></div>
-                            <img className="PhotoProp" style={this.state.photoDimensions} onClick={this.onOpenPhotoDialog} onLoad={this.onImgLoad} src={this.state.photoUrl} title="Click here for adding a picture" alt="Click here for adding a picture"></img>
-                            <input id="photoUrlInput" className={(this.state.photoUrlShown == true) ? 'inputShown' : 'inputHidden'} onClick={this.onClosePhotoDialog} value={this.state.photoUrlInput} onChange={this.onPhotoUrlChange}></input>
+                            <div className="PoiProp"><span>link URL</span><input placeholder="link URL" style={{width:"250px"}} value={this.state.metadata!.find(e => e.lang === this.state.language)!.link || ""} onChange={this.onLinkChange}></input></div>
+                            <div className="PoiProp" style={{marginLeft:"auto"}}><span>link label</span><input placeholder="link label" style={{width:"150px"}} value={this.state.metadata!.find(e => e.lang === this.state.language)!.linkLabel || ""} onChange={this.onLinkLabelChange}></input></div>
+                            <div className="PoiProp" ><span>lon</span><input placeholder="lon" value={this.state.lon} onChange={this.onLonChange} style={{width:"80px"}}></input></div>
+                            <div className="PoiProp" style={{marginLeft:"10px"}}><span>lat</span><input placeholder="lat" value={this.state.lat} onChange={this.onLatChange} style={{width:"80px"}}></input></div>
+                            <div className="PoiProp" style={{marginLeft:"auto"}}><span>symbol size</span><input placeholder="size" value={this.state.size} onChange={this.onSizeChange} style={{width:"30px"}}></input></div>
+                            <ul className="PhotoProp">
+                            {this.renderPhotosVideos()}
+                            </ul>
                             <button onClick={this.onConfirm}>Done</button>
-                            <FontAwesomeIcon id="removePoi" icon={faTrash} onClick={(e) => {this.props.removePoi(this.props.poi!.ref); this.props.editPoi(-1); }} />
+                            <FontAwesomeIcon id="removePoi" icon={faTrash} onClick={this.onDelete} />
                         </div>
                     </div>
                 );

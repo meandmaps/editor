@@ -84,13 +84,17 @@ class Loader extends React.Component <Props,IState> {
         '(\\:\\d+)?(\\/[-a-z\\d%_.~+]*)*'+ // port and path
         '(\\?[;&a-z\\d%_.~+=-]*)?'+ // query string
         '(\\#[-a-z\\d_]*)?$','i'); // fragment locator
-      return !!pattern.test(str);
+      return (!!pattern.test(str)) || (str.indexOf("mapbox://") == 0);
     }
 
     onLoad(e: any) {
 
-        if (this.validURL(this.state.styleUrl))
+        // mapbox://styles/mapbox/streets-v11?access_token=pk.eyJ1IjoiZXhhbXBsZXMiLCJhIjoiY2p0MG01MXRqMW45cjQzb2R6b2ptc3J4MSJ9.zA2W0IkI0c6KaAhJfk9bWg
+
+        if (this.validURL(this.state.styleUrl)) {
+
             this.props.selectStyle(this.state.styleUrl);
+        }
     }
 
     render() {

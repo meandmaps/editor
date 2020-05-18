@@ -24,7 +24,7 @@ SOFTWARE.
 import React, { CSSProperties } from 'react';
 import { connect } from 'react-redux'
 
-import { Poi } from './PoiReducerTypes';
+import { Poi, Photo } from './PoiReducerTypes';
 
 import { RootState } from './RootReducer';
 import { clearStyle, closeMenu } from './StyleReducerActions';
@@ -171,7 +171,7 @@ class Menu extends React.Component <Props,IState> {
                 'icon': poi.symbol,
                 'icon-size': poi.symbolSize,
                 'ref': poi.ref,
-                'photo': poi.photoUrl,
+                'photos': poi.photos,
                 'metadata': poi.metadata,
             }
         };
@@ -385,14 +385,14 @@ class Menu extends React.Component <Props,IState> {
       let metadata = [];
       let icon: string;
       let icon_size: number;
-      let photo: string;
+      let photos: Array<Photo>;
 
       if ("#Style" in feature.properties) {
 
         _ref += 1;
         ref = _ref;
 
-        metadata.push({lang:"fr", title:feature.properties["#Name"], desc:""});
+        metadata.push({lang:"fr", title:feature.properties["#Name"], desc:"", link: "", linkLabel: ""});
 
         icon = feature.properties["#Style"];
 
@@ -403,7 +403,7 @@ class Menu extends React.Component <Props,IState> {
 
         icon_size = 0.5;
 
-        photo = "";
+        photos = new Array<Photo>();
       }
       else {
 
@@ -414,13 +414,13 @@ class Menu extends React.Component <Props,IState> {
 
         ref = feature.properties["ref"];
 
-        photo = feature.properties["photo"];
+        photos = Object.assign([], feature.properties["photos"]);
       }
 
       const poi: Poi = {
           ref: ref,
           metadata: metadata,
-          photoUrl: photo,
+          photos: photos,
           lngLat: new mapboxgl.LngLat(feature.geometry.coordinates[0],feature.geometry.coordinates[1]),
           symbol: icon,
           symbolSize: icon_size,
@@ -468,8 +468,8 @@ class Menu extends React.Component <Props,IState> {
 
           const poi: Poi = {
               ref:ref,
-              metadata: [{lang: "fr", title: name, desc: description}],
-              photoUrl: "",
+              metadata: [{lang: "fr", title: name, desc: description, link: "", linkLabel: ""}],
+              photos: [],
               lngLat: new mapboxgl.LngLat(parseFloat(res[1]),parseFloat(res[2])),
               symbol: this.props.selectedMarker,
               symbolSize: 0.5

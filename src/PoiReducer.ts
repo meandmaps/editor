@@ -31,6 +31,7 @@ import {
   SELECT_POI,
   EDIT_POI,
   UPDATE_POI,
+  MOVE_POI,
   CLEAR_POI,
 } from './PoiReducerTypes'
 
@@ -77,6 +78,22 @@ export const poiReducer: Reducer<PoiState, PoiActionTypes> = (state: PoiState = 
             )],
           lastUpdate: Date.now()
         }
+    case MOVE_POI:
+
+      const poi = state.poiList.find(
+            poi => poi.ref == action.ref
+          );
+      let clonedPoi = Object. assign({}, poi);
+
+      clonedPoi.lngLat = action.lngLat;
+
+      return {
+        ...state,
+        poiList: [clonedPoi,...state.poiList.filter(
+            poi => poi.ref !== action.ref
+          )],
+        lastUpdate: Date.now()
+      }
   case CLEAR_POI:
     return {
       ...state,

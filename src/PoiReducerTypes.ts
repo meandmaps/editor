@@ -28,12 +28,21 @@ export const REMOVE_POI = 'REMOVE_POI'
 export const SELECT_POI = 'SELECT_POI'
 export const EDIT_POI = 'EDIT_POI'
 export const UPDATE_POI = 'UPDATE_POI'
+export const MOVE_POI = 'MOVE_POI'
 export const CLEAR_POI = 'CLEAR_POI'
 
 export interface PoiMetadata {
   lang: string;
   title: string;
   desc: string;
+  link: string;
+  linkLabel: string;
+}
+
+export interface Photo {
+  url: string;
+  width: number;
+  height: number;
 }
 
 export interface Poi {
@@ -42,7 +51,7 @@ export interface Poi {
   symbol: string;
   symbolSize: number;
   metadata: Array<PoiMetadata>;
-  photoUrl: string;
+  photos: Array<Photo>;
 }
 
 export interface PoiState {
@@ -77,8 +86,14 @@ interface UpdatePoiAction extends Action{
   poi: Poi;
 }
 
+interface MovePoiAction extends Action{
+  type: typeof MOVE_POI;
+  ref: number;
+  lngLat: mapboxgl.LngLat;
+}
+
 interface ClearPoiAction extends Action{
   type: typeof CLEAR_POI;
 }
 
-export type PoiActionTypes = AddPoiAction | RemovePoiAction | SelectPoiAction | EditPoiAction | UpdatePoiAction | ClearPoiAction;
+export type PoiActionTypes = AddPoiAction | RemovePoiAction | SelectPoiAction | EditPoiAction | UpdatePoiAction | MovePoiAction | ClearPoiAction;
