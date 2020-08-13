@@ -24,7 +24,7 @@
     "react-xml-parser": "^1.1.6",
     "redux": "^4.0.5",
     "redux-persist": "^6.0.0",
-    "serialize-javascript": "^2.1.2",
+    "serialize-javascript": "^3.1.0",
     "typescript": "3.6.4"
   },
   "scripts": {
